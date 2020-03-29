@@ -1,0 +1,142 @@
+﻿@using System.Linq
+@model Annual_faculty_promotions.Core.Domain.User.AppUser
+@{
+    string departmentid = Model.Roles.Any() ? Model.Roles.FirstOrDefault().Department.Id.ToString() : "";
+}
+
+<div>
+    کاربر : <label>@Model.UserName</label>
+</div>
+<div class="well form-horizontal">
+
+    <div class="form-group">
+        <label class="col-sm-4" style="font-size: 13px;text-align: left">ساختار دانشگاه</label>
+        <div class="col-sm-8">
+            <input id="treeStructure" style="width: 250px;">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-4" style="font-size: 13px; text-align: left">مجوز</label>
+        <div class="col-sm-8">
+            <input id="treeRole" style="width: 250px;">
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-12">
+            @*<button style="padding: 0 5px 0 5px" onclick="addUserRole()" type="button" class="pull-left btn btn-primary btn-xs"><i style="padding:0 5px 0 5px;" class="glyphicon glyphicon-save"></i>ذخیره</button>*@
+            <span style="padding: 0 5px 0 5px" onclick="addUserRole();" class="pull-left btn btn-primary btn-xs">
+                <i style="padding:0 5px 0 5px;" class="glyphicon glyphicon-save"></i>ذخیره
+            </span>
+        </div>
+
+    </div>
+
+</div>
+<table id="dgUserRole"></table>
+
+
+
+<script>
+
+    $('#treeStructure').combotree({
+        url: '@Url.Action("GetCategoriesTreeNode", "UnivercityStructure")',
+        required: true
+    });
+
+    $('#treeRole').combobox({
+        url: '@Url.Action("GetRoles", "UserAdmin")',
+        required: true,
+        valueField: 'id',
+        textField: 'text'
+    });
+
+
+    $('#dgUserRole').datagrid({
+        title: 'مجوزها',
+
+        url: '@Url.Action("GetUserRole", "UserAdmin")',
+        idField: 'id',
+        height: 200,
+        checkbox: true,
+        loadMsg: 'شکیبا باشید...',
+        fitColumns: 'true',
+        lines: true,
+        queryParams: { uid: '@Model.Id' },
+        singleSelect: false,
+        columns: [
+          [
+              { field: 'DepartmentName', title: 'ساختار|گروه آموزشی', width: 300 },
+              { field: 'RolePersianName', title: 'مجوز', width: 300 },
+              {
+                  field: 'Action',
+                  title: 'عملیات',
+                  width: 100,
+                  formatter: function (value, rows, index) {
+                      return '<a departmentId=' + rows.DepartmentId + ' roleId=' + rows.RoleId + '  href="javascript:void(0)"  onclick="destroyUserRole(this)"><img class="delete"  src="/content/jquery-easyui-1.4.2/themes/icons/cancel.png"/></a>&nbsp&nbsp&nbsp';
+                  }
+              }
+          ]
+        ]
+    });
+
+
+    function addUserRole() {
+        var user = '@Model.Id';
+        var role = $('#treeRole').combotree('getValue');
+        var structure = $('#treeStructure').combotree('getValue');
+        $.messager.confirm('confirm', 'انتساب داده شود؟', function (r) {
+            if (r) {
+                $.post('@Url.Action("CreateUserRole", "UserAdmin", new { area = "UserArea" }, "http")',
+                {
+                    userid: user,
+                    roleId: role,
+                    structId: structure
+                }, function (result) {
+                    if (!result.isError) {
+                        $('#dgUserRole').datagrid('reload');
+                        $('#dataListUsers').datagrid('reload');
+                        $.messager.show({
+                            title: 'پیام سیستم',
+                            msg: result.Msg,
+                            showType: 'show'
+                        });
+                    } else {
+                        $.messager.show({
+                            title: 'پیام سیستم',
+                            msg: result.Msg,
+                            showType: 'show'
+                        });
+                    }
+                }, 'json');
+            }
+        });
+    }
+
+    function destroyUserRole(element) {
+        $.messager.confirm('confirm', 'حذف شود؟', function (r) {
+            if (r) {
+                $.post('@Url.Action("DestroyUserRole", "UserAdmin", new {area = "UserArea"}, "http")',
+                {
+                    userId: '@Model.Id', roleId: $(element).attr('roleId'), departmentId: $(element).attr('departmentId')
+                }, function (result) {
+                    if (!result.isError) {
+                        $.messager.show({
+                            title: 'پیام سیستم',
+                            msg: result.Msg,
+                            showType: 'show'
+                        });
+                        $('#dgUserRole').datagrid('reload');
+                        $('#dataListUsers').datagrid('reload');
+                    } else {
+                        $.messager.show({
+                            title: 'پیام سیستم',
+                            msg: result.Msg,
+                            showType: 'show'
+                        });
+                    }
+                }, 'json');
+            }
+        });
+    }
+</script>

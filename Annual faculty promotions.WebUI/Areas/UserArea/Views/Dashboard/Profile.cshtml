@@ -1,0 +1,76 @@
+﻿@model Annual_faculty_promotions.WebUI.Areas.UserArea.Models.ProfileViewModel
+@{
+    ViewBag.Title = Model.User.Profile.Name+" "+Model.User.Profile.Family;
+    Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+}
+<div class="page-header">
+    <h1><i class="fa fa-bar-chart-o page-header-icon"></i>&nbsp;&nbsp;پروفایل</h1>
+</div>
+<div class="page-profile right-to-left">
+    <div class="profile-row" style="margin-top: 90px">
+        <div class="left-col">
+            <div class="profile-block">
+                <div class="panel profile-photo">
+                    <img src="@Url.Content("~/Content/Images/Avatars/"+Model.User.Profile.Avatar)" alt="">                   
+                </div>
+                <ul class="nav nav-pills bs-tabdrop-example">
+                    <B>@(Model.User.Profile.Name + " " + Model.User.Profile.Family)</B>
+                </ul> 
+            </div>
+
+
+            <div class="panel panel-transparent">
+                <div class="panel-heading">
+                    <span class="panel-title">Social</span>
+                </div>
+                <div class="list-group">
+                    <a href="javascript:void(0)" class="list-group-item"><i class="profile-list-icon fa fa-twitter" style="color: #4ab6d5"></i> #dsteiner</a>
+                    <a href="javascript:void(0)" class="list-group-item"><i class="profile-list-icon fa fa-facebook-square" style="color: #1a7ab9"></i> Denise Steiner</a>
+                    <a href="javascript:void(0)" class="list-group-item"><i class="profile-list-icon fa fa-envelope" style="color: #888"></i> dsteiner#example.com</a>
+                </div>
+            </div>
+
+        </div>
+        <div class="right-col">
+
+    
+            <div id="dvContent" class="profile-content">
+                <div class="panel panel-transparent">
+                    <div class="panel-heading">
+                        <span class="panel-title">مشخصات</span>
+                    </div>
+                    <div class="list-group">
+                        <h5 class="list-group-item"><strong>آخرین مدرک تحصیلی</strong> </h5><h5 style="margin-right: 10px">
+                            @Model.User.Profile.LastGradeEducation @Model.User.Profile.FieldofStudy
+                        </h5>
+                        <h5 class="list-group-item"><strong>نقش ها</strong></h5>
+                        @foreach (var item in Model.Roles)
+                        {
+                            <h5 style="margin-right: 10px">@item.PersianName</h5>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+@section scripts{
+    <script>
+        function showMessages() {
+            $.ajax({
+                cashe: false,
+                url: '@Url.Action("RenderParialMessage", "Profile", new { area = "UserArea" }, "http")',
+                type: 'get',
+                dataType: 'html',
+                success: function (result) {
+                    $('#dvContent').html(result);
+                },
+                error: function (xhr, status) {
+                    xhr.responseText();
+                }
+            });
+        }
+    </script>
+}

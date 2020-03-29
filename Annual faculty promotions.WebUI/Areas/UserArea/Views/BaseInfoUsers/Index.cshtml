@@ -1,0 +1,139 @@
+﻿@{
+    ViewBag.Title = "BaseInfoUsers";
+    //Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+}
+<div id="divBaseInfo" class="row">
+    <div class="col-md-12">
+        <div class="bpanel">
+            <div class="note note-primary">معرفی کاربران سیستم</div>
+            <hr class="visible-xs no-grid-gutter-h">
+            <div class="bpanel-body">
+                @using (Html.BeginForm("FileUpload", "BaseInfoUsers", FormMethod.Post, new { id = "BaseInfoform", @class = "form-horizontal", enctype = "multipart/form-data", role = "form" }))
+                {
+                    <div class="form-group">
+                        <div class="col-md-4">
+                            <input type="file" id="excelFile" name="excelFile" class=" btn btn-primary btn-labeled" />
+                        </div>
+                        <div class="col-md-4">
+                            @*<a href="javascript:void(0)" onclick="FileUpload();" class=" btn btn-primary btn-labeled"><span class="btn-label icon fa fa-save"></span>انتقال</a>*@
+                            <span onclick="FileUpload();" class="btn btn-primary btn-labeled">
+                                <span class="btn-label icon fa fa-save"></span>انتقال
+                            </span>
+                        </div>
+                        <div class="col-md-4">
+                        </div>
+                    </div>
+                }
+                <div class="form-group">
+                    <table id="dgBaseInfoUsers"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    @Scripts.Render("~/bundles/jqueryAjaxForm")
+    <script src="~/Content/jquery-easyui-1.4.2/edatagrid.js"></script>
+
+    <script>
+        $('#dgBaseInfoUsers').edatagrid({
+            toolbar:
+            [
+                {
+                    text: 'جدید',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                        $('#dgBaseInfoUsers').edatagrid('addRow');
+                    }
+                }, '-',
+                {
+                    text: 'حذف',
+                    iconCls: 'icon-remove',
+                    handler: function () {
+                        $('#dgBaseInfoUsers').edatagrid('destroyRow');
+                    }
+                }, '-',
+                {
+                    text: 'ذخیره',
+                    iconCls: 'icon-save',
+                    handler: function () {
+                        $('#dgBaseInfoUsers').edatagrid('saveRow');
+                    }
+                }, '-',
+                {
+                    text: 'انصراف',
+                    iconCls: 'icon-undo',
+                    handler: function () {
+                        $('#dgBaseInfoUsers').edatagrid('cancelRow');
+                    }
+                }
+            ],
+            idField: 'BaseUserLoginId',
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: 400,
+            singleSelect: 'true',
+
+            url: '@Url.Action("GetBaseInfoUsers", "BaseInfoUsers", new { area = "UserArea" })',
+            saveUrl: '@Url.Action("Create", "BaseInfoUsers")',
+            updateUrl: '@Url.Action("Edit", "BaseInfoUsers")',
+            destroyUrl: '@Url.Action("Delete", "BaseInfoUsers")',
+            onError: function (index, row) {
+                $.messager.alert('پیام', row.Msg);
+            },
+            columns: [
+                [
+                    {
+                        field: 'CodeMeli',
+                        title: 'کد ملی',
+                        width: 180,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'CodeEstekhdam',
+                        title: 'کد استخدام',
+                        width: 180,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'Active',
+                        title: 'فعال/غیر فعال',
+                        width: 180
+                    }
+                ]
+            ],
+            onSuccess: function (index, row) {
+                $('#dgBaseInfoUsers').datagrid('reload');
+            }
+        });
+
+        function FileUpload() {
+            if ($('#BaseInfoform').valid()) {
+                $('#divBaseInfo').waiting();
+                $('#BaseInfoform').ajaxSubmit({
+                    cashe: false,
+                    url: '@Url.Action("FileUpload", "BaseInfoUsers", new { area = "UserArea" }, "http")',
+                    type: 'Post',
+                    dataType: 'json',
+                    data: $('#BaseInfoform').serialize(),
+                    success: function (result) {
+                        if (result.isError) {
+                            myalert('مشکل در انتقال.', 'danger');
+                            $('#divBaseInfo').waiting('done');
+                        } else {
+                            $('#dgBaseInfoUsers').datagrid('reload');
+                            $('#divBaseInfo').waiting('done');
+                            myalert('انتقال کابران با موفقیت انجام شد.', 'success');
+                        }
+                    },
+                    error: function (xhr, status) {
+                        alert(xhr.responseText());
+                        $('#divBaseInfo').waiting('done');
+                    }
+                });
+            } else {
+                return $(this).form('validate');
+            }
+        }
+    </script>
+}

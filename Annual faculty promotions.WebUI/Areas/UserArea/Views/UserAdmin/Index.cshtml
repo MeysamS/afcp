@@ -1,0 +1,108 @@
+﻿    <div class="easyui-panel" title="لیست کاربران">
+        <div id="dataListUsers">
+
+        </div>
+    </div>
+
+<div id="dlgSetRole" class="easyui-dialog" style="width: 600px; height: 450px; padding: 10px 20px"
+     closed="true" modal="true">
+</div>
+
+
+
+
+@section scripts{
+    <script>
+        var state = false;
+        $('#dataListUsers').datalist({
+            loadMsg: 'شکیبا باشید...',
+            height: 450,
+            url: '@Url.Action("GetUsers", "UserAdmin", new {area = "UserArea"})',
+            idField: 'id',
+            checkbox: true,
+            lines: true,
+            textFormatter: function (value, row, index) {
+                var result = "<div style='float:right;'>" +
+                    "<img style='width:50px;height:50px; border-radius: 50%;margin-left:5px;' src='/Content/Images/Avatars/" + row.avatar + "'/></div>" +
+                    "<div>" + row.text + "</div>"
+                    + "<div>" + row.email + "</div>";
+
+                if (row.rolName != "")
+                    result += "<div>مجوز : " + row.roleName + ":" + row.departmentId + "</div>";
+                       
+
+                result += " <div class='pull-right'><a onclick='showdlgSetRole(this)' uid='" + row.id + "' class='btn btn-default btn-sm' href='javascript:void(0)'>افزودن مجوز ها</a></div>";
+                return result;
+            }
+        });
+
+
+        
+        function showdlgSetRole(element) {
+            $.ajax({
+                url: '@Url.Action("SetRole", "UserAdmin", new { area = "UserArea" })',
+                dataType: 'html',
+                type: 'get',
+                data: { uid: $(element).attr('uid') },
+                success: function (result) {
+                    $('#dlgSetRole').html(result);
+                    $('#dlgSetRole').dialog('open').dialog('setTitle', 'مجوزها');
+                },
+                error: function () {
+
+                }
+            });
+        }
+       
+        @*function BackupDB() {
+            if (!confirm("آیا مایل به گرفتن پشتیبان از سیستم می باشید؟ ")) {
+                return false;
+            }
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: '@Url.Action("BackupDB", "UserAdmin")',
+                //data: {},
+                datatype: JSON,
+                contenttype: "application/json; charset=utf-8",
+                success: function (mydata) {
+                    alert(1);
+                    alert(mydata.Message);
+                },
+                error: function (mydata) {
+                    alert(2);
+                    alert(mydata.Message);
+                }
+            });
+        }*@
+
+        @*function destroyRole() {
+            var userrow = $('#dataListUsers').datalist('getChecked');
+            var rolrow = $('#dataListRoleForUser').datalist('getChecked');
+
+            $.messager.confirm('confirm', 'حذف شود؟', function (r) {
+                if (r) {
+                    $.post('@Url.Action("DestroyUserRole", "UserAdmin", new { area = "UserArea" }, "http")',
+                    { userid: userrow[0].id, rolename: rolrow[0].text }, function (result) {
+                        if (result.success) {
+                            $.messager.show({
+                                title: 'پیام سیستم',
+                                msg: result.Msg,
+                                showType: 'show'
+                            });
+                            getUserRoles(userrow[0].id);
+                        } else {
+                            $.messager.show({
+                                title: 'پیام سیستم',
+                                msg: result.Msg,
+                                showType: 'show'
+                            });
+                        }
+                    }, 'json');
+                }
+            });
+        }
+
+*@
+    </script>
+}

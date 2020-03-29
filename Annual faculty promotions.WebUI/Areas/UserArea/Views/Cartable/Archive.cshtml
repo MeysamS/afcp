@@ -1,0 +1,795 @@
+﻿@model Annual_faculty_promotions.WebUI.Areas.UserArea.Models.ArchiveViewModel
+@{
+    ViewBag.Title = "Archive";
+    Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+    bool sel = false;
+    var isSelect = new object();
+}
+<link href="~/Content/ListGridBootStrap.css" rel="stylesheet" />
+
+<ul class="breadcrumb breadcrumb-page">
+    <li><a href="javascript:void(0)">صفحه اصلی</a></li>
+    <li class="active"><a href="javascript:void(0)">کارتابل</a></li>
+    <li class="active"><a href="javascript:void(0)">بایگانی</a></li>
+</ul>
+<div class="page-header">
+    <div class="row">
+        <div class="pull-left col-xs-12 col-sm-auto">
+            <a href="javascript:void(0)" onclick="Archive();" class="btn btn-info btn-labeled"><span class="btn-label icon fa fa-archive"></span>بایگانی دائمی</a>
+        </div>
+        <div class="pull-right col-xs-12 col-sm-auto">
+            <a href="@Url.Action(MVC.UserArea.Cartable.Index())" class="btn btn-warning btn-labeled" style="width: 100%;"><span class="btn-label icon fa fa-undo"></span>برگشت به کارتابل</a>
+        </div>
+    </div>
+</div>
+<div id="divArchive" class="bpanel colourable" style="font-size: 12px">
+    @using (Html.BeginForm(MVC.UserArea.Cartable.Archive(), FormMethod.Post, new { id = "archiveform", @class = "form-horizontal", enctype = "multipart/form-data", role = "form" }))
+    {
+        @Html.Hidden("cartableId")
+        @Html.HiddenFor(m => m.Archive.Request.Id)
+        <div class="form-group" style="font-size: 12px">
+            <div class="col-md-1">
+                @if (string.IsNullOrWhiteSpace(Model.Archive.Request.User.Profile.Avatar))
+                {
+                    <img src="~/Content/assets/demo/avatars/1.jpg" alt="" width="60px" style="width: 50px; height: 60px">
+                }
+                else
+                {
+                    <img src="@Url.Content("~/Content/Images/Avatars/" +Model.Archive.Request.User.Profile.Avatar)" alt="" width="60px" style="width: 50px; height: 60px">
+                }
+            </div>
+            <div class="col-md-11">
+                <div class="form-group">
+                    <div class="col-md-4">
+                        <label class="col-md-6">متقاضی :</label>
+                        <div class="col-md-6">
+                            @Model.Archive.Request.User.Profile.Name @Model.Archive.Request.User.Profile.Family
+                            @*@Html.Display(Model.Request.User.Profile.Name + " " + Model.Request.User.Profile.Family, new { @class = "form-control" })*@
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="col-md-6">تاریخ آخرین ترفیع :</label>
+                        <div class="col-md-6">
+                            @Html.DisplayFor(m => m.Archive.Request.LastDateGrade, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="col-md-6">پایه :</label>
+                        <div class="col-md-6">
+                            @Html.DisplayFor(m => m.Archive.Request.Grade, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-4">
+                        <label class="col-md-6">گروه آموزشی :</label>
+                        <div class="col-md-6">
+                            @Html.DisplayFor(m => m.Archive.Request.UnivercityStructure.Name, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="col-md-6">وضعیت استخدام :</label>
+                        <div class="col-md-6">
+                            @Html.DisplayFor(m => m.Archive.Request.EmploymentStatusName, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="col-md-6">مرتبه علمی :</label>
+                        <div class="col-md-6">
+                            @Html.DisplayFor(m => m.Archive.Request.AcademicDegree, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <ul id="uidemo-tabs-default-demo" class="nav nav-tabs">
+            <li class="active" onclick="IsEdditing('dgNewTechnology',1);">
+                <a href="#uidemo-tabs-default-demo-Old" data-toggle="tab">فعالیت های سال های قبل <span id="countoldtech" class="badge badge-success"></span></a>
+            </li>
+            <li class="" onclick="IsEdditing('dgOldTechnology',0);">
+                <a href="#uidemo-tabs-default-demo-New" data-toggle="tab">فعالیت های سال جاری <span id="countnewtech" class="badge badge-success"></span></a>
+            </li>
+        </ul>
+
+        <div class="tab-content tab-content-bordered" style="height:220px">
+            <div class="tab-pane fade active in" id="uidemo-tabs-default-demo-Old">
+                <table id="dgOldTechnology"></table>
+            </div>
+            <div class="tab-pane fade active" id="uidemo-tabs-default-demo-New">
+                <table id="dgNewTechnology"></table>
+            </div>
+        </div>
+
+        <div class="bpanel-footer text-right">
+            <div class="form-group">
+                <div class="col-md-4">
+                    <label class="col-md-9 control-label">نظر کمیته ترفیعات واحد /سازمان :</label>
+                    <div class="col-md-3">
+                        <div class="switcher switcher-theme-square">
+                            @Html.EditorFor(model => model.Archive.IsOpinionCommite)
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="col-md-6 control-label">
+                        <span>پایه پذیرفته شده:</span>
+                    </label>
+                    <div class="col-md-6">
+                        @Html.TextBoxFor(m => m.Archive.Grade, new { @class = "form-control", disabled = "disabled" })
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="form-group">
+                <div class="col-md-4">
+                    <label class="col-md-6 control-label">امتیاز آموزشی :</label>
+                    <div class="col-md-6">
+                        @Html.TextBoxFor(m => m.Archive.EducationScore, new { @class = "form-control", @onchange = "SumScores();" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="col-md-6 control-label">امتیاز پژوهشی :</label>
+                    <div class="col-md-6">
+                        @Html.TextBoxFor(m => m.Archive.ResearchScore, new { @class = "form-control", @onchange = "SumScores();" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="col-md-6 control-label">امتیاز راهنمایی پروژه :</label>
+                    <div class="col-md-6">
+                        @Html.TextBoxFor(m => m.Archive.DissertationScore, new { @class = "form-control", @onchange = "SumScores();" })
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-4">
+                    <label class="col-md-6 control-label">پژوهشی،فناوری :</label>
+                    <div class="col-md-6">
+                        @Html.TextBoxFor(m => m.Archive.TechnologyScore, new { @class = "form-control", @onchange = "SumScores();" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="col-md-6 control-label">امتیاز اجرایی :</label>
+                    <div class="col-md-6">
+                        @Html.TextBoxFor(m => m.Archive.ExecutiveScore, new { @class = "form-control", @onchange = "SumScores();" })@*, @readonly = "readonly"*@
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="col-md-6 control-label">مجموع امتیاز :</label>
+                    <div class="col-md-6">
+                        @Html.TextBoxFor(m => m.Archive.SumScore, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-12">
+                    <label class="col-md-2 control-label">توضیحات :</label>
+                    <div class="col-md-10">
+                        @Html.TextBoxFor(m => m.Archive.Description, new { @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+
+            @*<a href="javascript:void(0)" onclick="Archive();" class=" btn btn-primary btn-labeled"><span class="btn-label icon fa fa-save"></span>ذخیره</a>*@
+            <span onclick="SaveTemporary();" class="btn btn-success btn-labeled">
+                <span class="btn-label icon fa fa-save"></span>ذخیره موقت
+            </span>
+        </div>
+    }
+</div>
+
+@section scripts{
+    @Scripts.Render("~/bundles/jqueryAjaxForm")
+    <script src="~/Content/jquery-easyui-1.4.2/edatagrid.js"></script>
+
+    <script>
+        var indexEditing = null;
+        $('#archiveform').ajaxForm();
+        $(document).ready(function() {
+            if ($('#Archive_IsOpinionCommite').is(':checked')) {
+                $('#Archive_Grade').removeAttr('disabled');
+            } else {
+                $('#Archive_Grade').attr('disabled', 'disabled');
+            }
+        });
+        $(function () {
+            $('.switcher :input[type=checkbox]').each(function() {
+                $(this).switcher({
+                    theme: 'square',
+                    on_state_content: '<span class="fa fa-check"></span>',
+                    off_state_content: '<span class="fa fa-times"></span>'
+                });
+
+                $(this).on('change', function() {
+
+                    if ($(this).attr("id") == 'Archive_IsOpinionCommite') {
+                        if ($(this).is(':checked')) {
+                            $('#Archive_Grade').removeAttr('disabled');
+                        } else {
+                            $('#Archive_Grade').val(0);
+                            $('#Archive_Grade').attr('disabled', 'disabled');
+                        }
+                    }
+                });
+            });
+        });
+
+        $('#dgOldTechnology').edatagrid({
+            toolbar:
+            [
+                {
+                    text: 'ویرایش',
+                    iconCls: 'icon-edit',
+                    handler: function () {
+                        row = $('#dgOldTechnology').edatagrid('getSelected');
+                        if (row == null) {
+                            $.messager.alert("warning", "سطری انتخاب نشده است!");
+                            return;
+                        }
+                        index = $('#dgOldTechnology').edatagrid('getRowIndex', row);
+                        $('#dgOldTechnology').edatagrid('editRow', index);
+                    }
+                },'-',
+                {
+                    text: 'اعمال نمره',
+                    iconCls: 'icon-save',
+                    handler: function() {
+                        SetScore(0);
+                        SumScores();
+                    }
+                }
+            ],
+            idField: 'Id',
+            fixed:true,
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: 200,
+            //singleSelect: false,
+            checkOnSelect: false,
+            selectOnCheck: false,
+
+            url: '@Url.Action("GetOldTechnology", "Cartable")' + '?requestId=' + $('#Archive_Request_Id').val(),
+            columns: [
+                [
+                    {
+                        field: 'Id',
+                        hidden: 'hidden',
+                        width: 80
+                    },
+                    {
+                        field: 'RequestId',
+                        hidden: 'hidden',
+                        width: 80
+                    },
+                    //{
+                    //    title: 'انتخاب',
+                    //    field: 'Used',
+                    //    checkbox: true,
+                    //    width: 80
+                    //},
+                    {
+                        field: 'TechnologyType',
+                        hidden: 'hidden',
+                        width: 80
+                    },
+                    {
+                        field: 'TechnologyTypeTitle',
+                        title: 'نوع فعالیت',
+                        width: 150
+                    },
+                    {
+                        field: 'Subject',
+                        title: 'عنوان',
+                        width: 300
+                    },
+                    {
+                        field: 'PresentationDate',
+                        autoRowHeight: true,
+                        title: 'تاریخ انتشار/ارائه',
+                        width: 100
+                    },
+                    {
+                        field: 'LicenseDate',
+                        autoRowHeight: true,
+                        title: 'تاریخ انقضاء',
+                        width: 100
+                    },
+                    {
+                        field: 'Score',
+                        autoRowHeight: true,
+                        title: 'امتیاز کل',
+                        width: 60
+                    },
+                    {
+                        field: 'RemindScore',
+                        autoRowHeight: true,
+                        title: 'امتیاز باقیمانده',
+                        width: 80
+                    },
+                    {
+                        field: 'UsingScore',
+                        autoRowHeight: true,
+                        title: 'استفاده شود',
+                        width: 70,
+                        editor: { type: 'textbox', width: 100, options: { precision: 2 } }
+                    }
+                ]
+            ],
+            //onCheck: function(index, row) {
+            //    $(this).datagrid('beginEdit', index);
+            //    var ed = $(this).datagrid('getEditor', { index: index, field: 'UsingScore' });
+            //    $(ed.target).focus();
+            //},
+            //onUncheck: function(index, row) {
+            //    var value = row.UsingScore;
+            //    $(this).datagrid('beginEdit', index);
+            //    var ed = $(this).datagrid('getEditor', { index: index, field: 'UsingScore' });
+            //    $(ed.target).textbox('setValue', 0);
+            //    $('#Archive_TechnologyScore').val(parseFloat($('#Archive_TechnologyScore').val()) - parseFloat(value));
+            //    $(this).edatagrid('saveRow');
+            //    $(this).edatagrid('acceptChanges');
+            //    SumScores();
+            //},
+            onDblClickCell: function(index, field, value) {
+                //$(this).datagrid('cancelEdit', index);
+            },
+            onLoadSuccess: function(data) {
+                $('#countoldtech').html(data.rows.length);
+                for (var i = 0; i < data.rows.length; ++i) {
+                    if (data.rows[i]['UsingScore'] > 0) {
+                        //$(this).datagrid('checkRow', i);
+                        //$(this).datagrid('cancelEdit', i);
+                        $('#Archive_TechnologyScore').val(parseFloat($('#Archive_TechnologyScore').val()) + parseFloat(data.rows[i]['UsingScore']));
+                    }
+                }
+            },
+            onSelect: function(index, row) {
+                //$(this).datagrid('unselectRow', index);
+            }
+        });
+        $('#dgNewTechnology').edatagrid({
+            toolbar:
+            [
+                {
+                    text: 'ویرایش',
+                    iconCls: 'icon-edit',
+                    handler: function () {
+                        row = $('#dgNewTechnology').edatagrid('getSelected');
+                        if (row == null) {
+                            $.messager.alert("warning", "سطری انتخاب نشده است!");
+                            return;
+                        }
+                        index = $('#dgNewTechnology').edatagrid('getRowIndex', row);
+                        $('#dgNewTechnology').edatagrid('editRow', index);
+                    }
+                },
+                {
+                    text: 'اعمال نمره',
+                    iconCls: 'icon-save',
+                    handler: function() {
+                        SetScore(1);
+                        SumScores();
+                    }
+                }
+            ],
+            idField: 'Id',
+            fixed: true,
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: 200,
+            //singleSelect: false,
+            //checkOnSelect: false,
+            //selectOnCheck: false,
+
+            url: '@Url.Action("GetNewTechnology", "Cartable")' + '?requestId=' + $('#Archive_Request_Id').val(),
+            columns: [
+                [
+                    {
+                        field: 'Id',
+                        hidden: 'hidden',
+                        width: 80
+                    },
+                    {
+                        field: 'RequestId',
+                        hidden: 'hidden',
+                        width: 80
+                    },
+                    //{
+                    //    title: 'انتخاب',
+                    //    field: 'Used',
+                    //    checkbox: true,
+                    //    width: 80
+                    //},
+                    {
+                        field: 'TechnologyType',
+                        hidden: 'hidden',
+                        width: 80
+                    },
+                    {
+                        field: 'TechnologyTypeTitle',
+                        title: 'نوع فعالیت',
+                        width: 150
+                    },
+                    {
+                        field: 'Subject',
+                        title: 'عنوان',
+                        width: 300
+                    },
+                    {
+                        field: 'PresentationDate',
+                        autoRowHeight: true,
+                        title: 'تاریخ انتشار/ارائه',
+                        width: 100
+                    },
+                    {
+                        field: 'LicenseDate',
+                        autoRowHeight: true,
+                        title: 'تاریخ انقضاء',
+                        width: 100
+                    },
+                    {
+                        field: 'Score',
+                        autoRowHeight: true,
+                        title: 'امتیاز کل',
+                        width: 60
+                    },
+                    {
+                        field: 'RemindScore',
+                        autoRowHeight: true,
+                        title: 'امتیاز باقیمانده',
+                        width: 80
+                    },
+                    {
+                        field: 'UsingScore',
+                        autoRowHeight: true,
+                        title: 'استفاده شود',
+                        width: 70,
+                        editor: { type: 'textbox', width: 100, options: { precision: 2 } }
+                    }
+                ]
+            ],
+            //onCheck: function (index, row) {
+            //    $(this).datagrid('beginEdit', index);
+            //    var ed = $(this).datagrid('getEditor', { index: index, field: 'UsingScore' });
+            //    $(ed.target).focus();
+            //},
+            //onUncheck: function (index, row) {
+            //    var value = row.UsingScore;
+            //    $(this).datagrid('beginEdit', index);
+            //    var ed = $(this).datagrid('getEditor', { index: index, field: 'UsingScore' });
+            //    $(ed.target).textbox('setValue', 0);
+            //    $('#Archive_TechnologyScore').val(parseFloat($('#Archive_TechnologyScore').val()) - parseFloat(value));
+            //    $(this).edatagrid('saveRow');
+            //    $(this).edatagrid('acceptChanges');
+            //    SumScores();
+            //},
+            onDblClickCell: function(index, field, value) {
+                //$(this).datagrid('cancelEdit', index);
+            },
+            onLoadSuccess: function(data) {
+                $('#countnewtech').html(data.rows.length);
+                for (i = 0; i < data.rows.length; ++i) {
+                    if (data.rows[i]['UsingScore'] > 0) {
+                        //$(this).datagrid('checkRow', i);
+                        //$(this).datagrid('cancelEdit', i);
+                        $('#Archive_TechnologyScore').val(parseFloat($('#Archive_TechnologyScore').val()) + parseFloat(data.rows[i]['UsingScore']));
+                    }
+                }
+            },
+            onSelect: function(index, row) {
+                // $(this).datagrid('unselectRow', index);
+            }
+        });
+
+        function IsEdditing(grid,gridIndex) {
+            var rowIndex = $(('#' + grid).toString()).datagrid("getRowIndex", $(('#' + grid).toString()).datagrid("getSelected"));
+            if ($(('#' + grid).toString()).edatagrid('isEditing', rowIndex)) {
+                SumScores();
+                SetScore(gridIndex);
+            }
+        }
+        $('#uidemo-tabs-default-demo-Old').click(function (e) {
+            e.preventDefault();
+            if ($('#dgNewTechnology').edatagrid('isEditing')) {
+                $.messager.alert('ابتدا تغییرات را اعمال نمره کنید!');
+                return;
+            }
+        });
+
+        function SumScores() {
+            var educationScore = Number($("#Archive_EducationScore").val());
+            var researchScore = Number($("#Archive_ResearchScore").val());
+            var executiveScore = Number($("#Archive_ExecutiveScore ").val());
+            var writingBook = Number($("#Archive_TechnologyScore").val());
+            var printResearch = Number($("#Archive_DissertationScore").val());
+            $("#Archive_SumScore").val(educationScore + researchScore + executiveScore + writingBook + printResearch);
+
+        }
+
+        function SetScore() {
+            var val, rowIndex, edUsingScore;
+            var SumScoreTech = parseFloat(@Model.Archive.TechnologyScore);
+            var row = $('#dgOldTechnology').datagrid('getRows');
+            for (var i = 0; i < row.length; i++) {
+                rowIndex = $('#dgOldTechnology').datagrid('getRowIndex', row[i]);
+                edUsingScore = $('#dgOldTechnology').datagrid('getEditor', { index: rowIndex, field: 'UsingScore' });
+                if (edUsingScore == null) {
+                    val = parseFloat(row[i].UsingScore);
+                    //SumScoreTech = parseFloat(SumScoreTech) + parseFloat(row[i].UsingScore);
+                    //continue;
+                } else {
+                    val = parseFloat($(edUsingScore.target).textbox('getValue'));
+                }
+                if (val == 0)
+                    continue;
+                if ((val < 0) || (val > row[i].RemindScore)) {
+                    //if (techType == 0)
+                    $.messager.alert({ title: 'پیام سیستم', msg: 'لطفا نمرات فعالیت های سال های قبل را اصلاح کنید!', showType: 'show' });
+                    //else
+                    //    $.messager.show({ title: 'پیام سیستم', msg: 'لطفا نمرات فعالیت های سال جاری را اصلاح کنید!', showType: 'show' });
+                    return;
+                }
+                SumScoreTech = SumScoreTech + val;
+            }
+
+            row = $('#dgNewTechnology').datagrid('getRows');
+            for (var i = 0; i < row.length; i++) {
+                rowIndex = $('#dgNewTechnology').datagrid('getRowIndex', row[i]);
+                edUsingScore = $('#dgNewTechnology').datagrid('getEditor', { index: rowIndex, field: 'UsingScore' });
+                if (edUsingScore == null) {
+                    val = parseFloat(row[i].UsingScore);
+                    //SumScoreTech = parseFloat(SumScoreTech) + parseFloat(row[i].UsingScore);
+                    //continue;
+                } else {
+                    val = parseFloat($(edUsingScore.target).textbox('getValue'));
+                }
+                if (val == 0)
+                    continue;
+                if ((val < 0) || (val > row[i].RemindScore)) {
+                    //if (techType == 0)
+                    //    $.messager.show({ title: 'پیام سیستم', msg: 'لطفا نمرات فعالیت های سال های قبل را اصلاح کنید!', showType: 'show' });
+                    //else
+                    $.messager.alert({ title: 'پیام سیستم', msg: 'لطفا نمرات فعالیت های سال جاری را اصلاح کنید!', showType: 'show' });
+                    return;
+                }
+                SumScoreTech = SumScoreTech + val;
+            }
+            $('#Archive_TechnologyScore').val(parseFloat(SumScoreTech));
+            $('#dgOldTechnology').edatagrid('acceptChanges');
+            $('#dgNewTechnology').edatagrid('acceptChanges');
+        }
+
+        function SaveTemporary() {
+            var oldTech = {
+                lineas: []
+            };
+            var strOldTech = "";
+            var old;
+            //Armado del arreglo JSON a enviar
+            var row = $('#dgOldTechnology').datagrid('getRows'); // get all rows of Datagrid
+            for (var i = 0; i < row.length; i++) {
+                if (row[i].UsingScore <= 0)
+                    continue;
+                old = row[i];
+                //  alert(renglon.Id);
+                oldTech.lineas.push({
+                    "Id": old.Id,
+                    "RequestId": old.RequestId,
+                    "TechnologyType": old.TechnologyType,
+                    "TechnologyTypeTitle": old.TechnologyTypeTitle,
+                    "Subject": old.Subject,
+                    "PresentationDate": old.PresentationDate,
+                    "LicenseDate": old.LicenseDate,
+                    "Score": old.Score,
+                    "RemindScore": old.RemindScore,
+                    "UsingScore": old.UsingScore,
+                    "total": row.length
+                });
+                // alert(facturas.lineas);
+                strOldTech =
+                    strOldTech +
+                    old.Id + "," +
+                    old.RequestId + "," +
+                    old.TechnologyType + "," +
+                    old.TechnologyTypeTitle + "," +
+                    old.Subject + "," +
+                    old.PresentationDate + "," +
+                    old.LicenseDate + "," +
+                    old.Score + "," +
+                    old.RemindScore + "," +
+                    old.UsingScore + "," +
+                    row.length + "&";
+                // alert(linea_facturas);
+            }
+
+            var newTech = {
+                lineas: []
+            };
+            var strNewTech = "";
+            //Armado del arreglo JSON a enviar
+            row = $('#dgNewTechnology').datagrid('getRows'); // get all rows of Datagrid
+            for (var j = 0; j < row.length; j++) {
+                if (row[j].UsingScore <= 0)
+                    continue;
+                old = row[j];
+                //  alert(renglon.Id);
+                newTech.lineas.push({
+                    "Id": old.Id,
+                    "RequestId": old.RequestId,
+                    "TechnologyType": old.TechnologyType,
+                    "TechnologyTypeTitle": old.TechnologyTypeTitle,
+                    "Subject": old.Subject,
+                    "PresentationDate": old.PresentationDate,
+                    "LicenseDate": old.LicenseDate,
+                    "Score": old.Score,
+                    "RemindScore": old.RemindScore,
+                    "UsingScore": old.UsingScore,
+                    "total": row.length
+                });
+                // alert(facturas.lineas);
+                strNewTech =
+                    strNewTech +
+                    old.Id + "," +
+                    old.RequestId + "," +
+                    old.TechnologyType + "," +
+                    old.TechnologyTypeTitle + "," +
+                    old.Subject + "," +
+                    old.PresentationDate + "," +
+                    old.LicenseDate + "," +
+                    old.Score + "," +
+                    old.RemindScore + "," +
+                    old.UsingScore + "," +
+                    row.length + "&";
+                // alert(linea_facturas);
+            }
+            $.messager.confirm('confirm', 'آیا مایل به ثبت بایگانی موقت هستید؟', function(r) {
+                if (r) {
+                    if ($('#archiveform').valid()) {
+                        $('#divArchive').waiting();
+                        $('#archiveform').ajaxSubmit({
+                            cashe: false,
+                            url: '@Url.Action("SaveTemporary", "Cartable", new {area = "UserArea"}, "http")',
+                            type: 'Post',
+                            dataType: 'json',
+                            data: { oldTech: strOldTech, newTech: strNewTech }, //{ rows: datas, dgOldTechnology: rows, dgNewTechnology: rows }, //
+                            success:
+                                function(result) {
+                                    if (result.isError) {
+                                        $('#divArchive').waiting('done');
+                                        myalert('مشکل در ثبت بایگانی موقت.', 'danger');
+                                    } else {
+                                        $('#divArchive').waiting('done');
+                                        myalert('ثبت بایگانی موقت با موفقیت انجام شد.', 'success');
+                                    }
+                                },
+                            error: function(xhr, status) {
+                                $('#divArchive').waiting('done');
+                                alert(xhr.responseText());
+                            }
+                        });
+
+                    } else {
+                        myalert('خطا در ورود اطلاعات.', 'danger');
+                        return $(this).form('validate');
+                    }
+                }
+            });
+        }
+
+        function Archive() {
+            if (($('#Archive_IsOpinionCommite').is(':checked')) & (Number($('#Archive_Grade').val()) <= 0)) {
+                $.messager.show({ title: 'پیام سیستم', msg: 'لطفا پایه پذیرفته شده را وارد کنید!', showType: 'show' });
+                return;
+            }
+            /* Array to store datagrid records */
+            var oldTech = {
+                lineas: []
+            };
+            var strOldTech = "";
+            var old;
+            var row = $('#dgOldTechnology').datagrid('getRows');
+            for (var i = 0; i < row.length; i++) {
+                if (row[i].UsingScore<=0)
+                    continue;
+                old = row[i];
+                oldTech.lineas.push({
+                    "Id": old.Id,
+                    "RequestId": old.RequestId,
+                    "TechnologyType": old.TechnologyType,
+                    "TechnologyTypeTitle": old.TechnologyTypeTitle,
+                    "Subject": old.Subject,
+                    "PresentationDate": old.PresentationDate,
+                    "LicenseDate": old.LicenseDate,
+                    "Score": old.Score,
+                    "RemindScore": old.RemindScore,
+                    "UsingScore": old.UsingScore,
+                    "total": row.length
+                });
+                strOldTech =
+                    strOldTech +
+                    old.Id + "," +
+                    old.RequestId + "," +
+                    old.TechnologyType + "," +
+                    old.TechnologyTypeTitle + "," +
+                    old.Subject + "," +
+                    old.PresentationDate + "," +
+                    old.LicenseDate + "," +
+                    old.Score + "," +
+                    old.RemindScore + "," +
+                    old.UsingScore + "," +
+                    row.length + "&";
+            }
+            var newTech = {
+                lineas: []
+            };
+            var strNewTech = "";
+            row = $('#dgNewTechnology').datagrid('getRows');
+            for (var j = 0; j < row.length; j++) {
+                if (row[j].UsingScore <= 0)
+                    continue;
+                old = row[j];
+                newTech.lineas.push({
+                    "Id": old.Id,
+                    "RequestId": old.RequestId,
+                    "TechnologyType": old.TechnologyType,
+                    "TechnologyTypeTitle": old.TechnologyTypeTitle,
+                    "Subject": old.Subject,
+                    "PresentationDate": old.PresentationDate,
+                    "LicenseDate": old.LicenseDate,
+                    "Score": old.Score,
+                    "RemindScore": old.RemindScore,
+                    "UsingScore": old.UsingScore,
+                    "total": row.length
+                });
+                strNewTech =
+                    strNewTech +
+                    old.Id + "," +
+                    old.RequestId + "," +
+                    old.TechnologyType + "," +
+                    old.TechnologyTypeTitle + "," +
+                    old.Subject + "," +
+                    old.PresentationDate + "," +
+                    old.LicenseDate + "," +
+                    old.Score + "," +
+                    old.RemindScore + "," +
+                    old.UsingScore + "," +
+                    row.length + "&";
+            }
+            $.messager.confirm('confirm', 'با این عمل در خواست مورد نظر بایگانی خواهد شد، آیا مایل هستید؟', function(r) {
+                if (r) {
+                    if ($('#archiveform').valid()) {
+                        $('#divArchive').waiting();
+                        $('#archiveform').ajaxSubmit({
+                            cashe: false,
+                            url: '@Url.Action("Archive", "Cartable", new {area = "UserArea"}, "http")',
+                            type: 'Post',
+                            dataType: 'json',
+                            data: { oldTech: strOldTech, newTech: strNewTech }, //{ rows: datas, dgOldTechnology: rows, dgNewTechnology: rows }, //
+                            success:
+                                function(result) {
+                                    if (result.isError) {
+                                        $('#divArchive').waiting('done');
+                                        myalert('مشکل در بایگانی.', 'danger');
+                                    } else {
+                                        $('#divArchive').waiting('done');
+                                        myalert('بایگانی با موفقیت انجام شد.', 'success');
+                                        var url = '@Url.Action(MVC.UserArea.Cartable.Index())';
+                                        window.location.href = url;
+                                    }
+                                },
+                            error: function(xhr, status) {
+                                $('#divArchive').waiting('done');
+                                alert(xhr.responseText());
+                            }
+                        });
+
+                    } else {
+                        myalert('خطا در ورود اطلاعات.', 'danger');
+                        return $(this).form('validate');
+                    }
+                }
+                return $(this).form('validate');
+            });
+        }
+    </script>
+}

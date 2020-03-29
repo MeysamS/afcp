@@ -1,0 +1,45 @@
+﻿@using System.Web.Mvc.Html
+@using Annual_faculty_promotions.Core.Enums
+@using Annual_faculty_promotions.WebUI.Helpers
+@using Annual_faculty_promotions.WebUI.Helpers.Util
+@using Microsoft.AspNet.Identity
+@model Annual_faculty_promotions.WebUI.Areas.UserArea.Models.ProfileViewModel
+
+<div>
+    @foreach (var item in Model.Messagings)
+    {
+        bool condition = item.UserSenderId == int.Parse(User.Identity.GetUserId()) ? true : false;
+        <div class="row" style="border-bottom: 1px beige solid">
+            <div class="form-group">
+                <div class="col-md-1" style="margin-top: 5px">
+                    <p class="@(condition ? "fa fa-arrow-up" : "fa fa-arrow-down")" style="color: @(condition ? "green" : "red")"></p>
+                </div>
+                <div class="col-md-11">
+                    <div class="message">
+
+                        @if ((item.UserSender != null) && (item.UserSender.Profile != null) && (!string.IsNullOrWhiteSpace(item.UserSender.Profile.Avatar)))
+                        {
+                            <img class="message-avatar" src="@Url.Content("~/Content/Images/Avatars/" + item.UserSender.Profile.Avatar)" alt=""/>
+                        }
+                        else
+                        {
+                            <img class="message-avatar" src="@Url.Content("~/Content/Images/Avatars/profilepicture.png")" alt=""/>
+                        }
+                        <a href="javascript:(void)" class="message-subject">@item.Text</a>
+                        <div class="message-description">
+                            فرستنده:<a href="javascript:(void)" title="">
+                                @if (item.UserSender != null && item.UserSender.Profile != null)
+                                {
+                                    @(item.UserSender.Profile.Name + " " + item.UserSender.Profile.Family)
+                                }
+                            </a>|
+                            گیرنده <a href="javascript:(void)" title="">@(item.UserReciever.Profile.Name + " " + item.UserReciever.Profile.Family)</a>
+                            &nbsp;&nbsp;·&nbsp;&nbsp;
+                            @RelativeTimeCalculator.Calculate(item.CreatedDate)
+                        </div> <!-- / .message-description -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

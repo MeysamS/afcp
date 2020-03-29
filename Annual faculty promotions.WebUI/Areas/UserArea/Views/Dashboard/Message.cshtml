@@ -1,0 +1,57 @@
+﻿@using Annual_faculty_promotions.Core.Enums
+@using Annual_faculty_promotions.WebUI.Helpers.Util
+@using Microsoft.AspNet.Identity
+@model Annual_faculty_promotions.Core.Domain.Messaging
+<style>
+    .flexnav {
+        -webkit-padding-start: 0px;
+        -webkit-margin-before: 0px;
+        -webkit-margin-after: 0px;
+        margin-top: 0px;
+        margin-right: auto;
+        margin-bottom: 0px;
+        margin-left: auto;
+        width: 90%;
+        position: relative;
+        z-index: 1;
+    }
+</style>
+<div class="row">
+</div>
+<div class="panel widget-messages-alt">
+    <div class="panel-heading">
+        <span class="panel-title"><i class="panel-title-icon fa fa-envelope"></i> پیام </span>
+    </div> <!-- / .panel-heading -->
+    <div class="panel-body padding-sm">
+        <div class="messages-list">
+            <div class="message" style="word-wrap: break-word">
+                @if ((Model.UserSender != null) && (Model.UserSender.Profile != null) && (!string.IsNullOrWhiteSpace(Model.UserSender.Profile.Avatar)))
+                {
+                    <img class="message-avatar" src="@Url.Content("~/Content/Images/Avatars/" + Model.UserSender.Profile.Avatar)" alt="" />
+                }
+                else
+                {
+                    <img class="message-avatar" src="@Url.Content("~/Content/Images/Avatars/profilepicture.png")" alt="" />
+                }
+                <p class="message-description" style="color: black">@Model.Text</p>
+                <div class="message-description">
+                    فرستنده:<a href="javascript:void(0)" title="">
+                        @if (Model.UserSender != null && Model.UserSender.Profile != null)
+                        {
+                            @(Model.UserSender.Profile.Name + " " + Model.UserSender.Profile.Family)
+                        }
+                    </a>|
+                    گیرنده <a href="javascript:void(0)" title="">@(Model.UserReciever.Profile.Name + " " + Model.UserReciever.Profile.Family)</a>
+                    &nbsp;&nbsp;·&nbsp;&nbsp;
+                    @RelativeTimeCalculator.Calculate(Model.CreatedDate)
+                </div> <!-- / .message-description -->
+            </div>
+        </div> <!-- / .messages-list -->
+    </div> <!-- / .panel-body -->
+</div>
+
+@Scripts.Render("~/bundles/jqueryval")
+
+
+
+

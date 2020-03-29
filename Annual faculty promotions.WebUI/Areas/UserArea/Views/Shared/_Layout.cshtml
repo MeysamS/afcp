@@ -1,0 +1,250 @@
+﻿@using Annual_faculty_promotions.WebUI.Helpers
+@using Microsoft.AspNet.Identity
+<!DOCTYPE html>
+
+<html class="gt-ie8 gt-ie9 not-ie pxajs" style="font-family: tahoma">
+<!--[if IE 8]>         <html class="ie8"> <![endif]-->
+<!--[if IE 9]>         <html class="ie9 gt-ie8"> <![endif]-->
+<!--[if gt IE 9]><!-->
+<!--<![endif]-->
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>سامانه ترفیع اعضای هیئت علمی</title>
+
+
+    @Scripts.Render("~/bundles/modernizr")
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <link href="~/Content/bootstrap.rtl.css" rel="stylesheet" />
+    <link href="~/Content/assets/stylesheets/landerapp.min.css" rel="stylesheet" />
+    <link href="~/Content/assets/stylesheets/widgets.min.css" rel="stylesheet" />
+    <link href="~/Content/assets/stylesheets/pages.min.css" rel="stylesheet" />
+    <link href="~/Content/assets/stylesheets/rtl.min.css" rel="stylesheet" />
+    <link href="~/Content/assets/stylesheets/themes.min.css" rel="stylesheet" />
+    <link href="~/Content/waiting/waiting.css" rel="stylesheet" />
+    <link href="~/Content/Afp-icons.css" rel="stylesheet" />
+    @*
+        <link href="~/Content/waiting/jquery.wait-overlay.css" rel="stylesheet" />*@
+
+    <link href="~/Content/jquery-easyui-1.4.2/themes/bootstrap/easyui.css" rel="stylesheet" />
+    <link href="~/Content/jquery-easyui-1.4.2/themes/icon.css" rel="stylesheet" />
+    <link href="~/Content/jquery-easyui-1.4.2/themes/easyui-rtl.css" rel="stylesheet" />
+
+    <script src="~/Scripts/custom.js" type="text/javascript"></script>
+</head>
+
+<body class="theme-default  main-menu-animated main-navbar-fixed main-menu-fixed right-to-left" style="font-family: tahoma">
+    <script> var init = []; </script>
+    <script src="~/Content/assets/demo/demo.js"></script>
+
+    <div id="main-wrapper">
+
+        <div id="main-navbar" class="navbar navbar-inverse" role="navigation">
+            <!-- Main menu toggle -->
+            <button type="button" id="main-menu-toggle"><i class="navbar-icon fa fa-bars icon"></i><span class="hide-menu-text">HIDE MENU</span></button>
+
+            <div class="navbar-inner">
+                <!-- Main navbar header -->
+                <div class="navbar-header">
+                    <!-- Logo -->
+                    <a href="javascript:void(0)" class="navbar-brand">
+                        @User.UniversName()
+                    </a>
+                    <!-- Main navbar toggle -->
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar-collapse"><i class="navbar-icon fa fa-bars"></i></button>
+                </div> <!-- / .navbar-header -->
+                <div style="" id="main-navbar-collapse" class="collapse navbar-collapse main-navbar-collapse">
+                    <div>
+                        <div class="right clearfix">
+                            <ul class="nav navbar-nav pull-right right-navbar-nav">
+                                @*@Html.Partial("_Events")*@
+                                @{Html.RenderAction("GetMessages", "Dashboard");}
+                                <li>
+                                    <form class="navbar-form pull-left">
+                                        <input class="form-control" placeholder="کاوش ..." type="text">
+                                    </form>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="javascript:void(0)" class="dropdown-toggle user-menu" data-toggle="dropdown">
+                                        <img class="img-circle" src="@Url.Content("~/Content/Images/Avatars/" + User.Avatar())" alt="">
+                                        <span>@User.FullName()</span>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="@Url.Action("Index", "Profile")">پروفایل </a></li>
+                                        <li><a href="javascript:void(0)"><i class="dropdown-icon fa fa-cog"></i>&nbsp;&nbsp;تنظیمات</a></li>
+                                        <li class="divider"></li>
+                                        <li>
+                                            <a href="pages-signin.html"><i class="dropdown-icon fa fa-power-off"></i>&nbsp;&nbsp;خروج</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul> <!-- / .navbar-nav -->
+                        </div> <!-- / .right -->
+                    </div>
+                </div> <!-- / #main-navbar-collapse -->
+            </div> <!-- / .navbar-inner -->
+        </div> <!-- / #main-navbar -->
+
+        <div id="main-menu" role="navigation">
+            <div style="transition-timing-function: cubic-bezier(0.1, 0.57, 0.1, 1); transition-duration: 0ms; transform: translate(0px, 0px) translateZ(0px);" id="main-menu-inner">
+                <div class="bmenu-content top animated fadeIn" id="menu-content-demo">
+                    <div>
+                        @if (Request.IsAuthenticated)
+                        {
+                            using (Html.BeginForm("LogOff", "Dashboard", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <div class="text-bg"><span class="text-sm">سلام،</span> <span class="text-sm">@User.FullName() </span></div>
+                                <img class="img-circle" src="@Url.Content("~/Content/Images/Avatars/"+User.Avatar())" style="width: 50px;height:50px" alt="">
+                                <div class="btn-group">
+                                    <a href="javascript:void(0)" class="btn btn-xs btn-primary btn-outline dark"><i class="fa fa-envelope"></i></a>
+                                    <a href="@Url.Action("Index", "Profile")" class="btn btn-xs btn-primary btn-outline dark"><i class="fa fa-user"></i></a>
+                                    <a href="javascript:void(0)" class="btn btn-xs btn-primary btn-outline dark"><i class="fa fa-cog"></i></a>
+                                    <a href="javascript:document.getElementById('logoutForm').submit()" class="btn btn-xs btn-danger btn-outline dark"><i class="fa fa-power-off"></i></a>
+                                </div>
+                                <a href="javascript:void(0)" class="close">×</a>
+                            }
+                        }
+
+                    </div>
+                </div>
+                <ul class="navigation">
+                    <li class="active">
+                        <a href="@Url.Action("Index","Cartable")">
+                            <i class="bmenu-icon fa fa-dashboard"></i>
+                            <span class="mm-text mmc-dropdown-delay animated fadeIn">کارتابل</span>
+                            <span class="label label-warning pull-right"><span id="cartableCount">@{Html.RenderAction("CartableCount", "Cartable");}</span></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Index", "Request")">
+                            <i class="bmenu-icon fa fa-bars"></i>
+                            <span class="mm-text mmc-dropdown-delay animated fadeIn">درخواست</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("TrackingRequest", "Cartable")">
+                            <i class="bmenu-icon fa fa-forward"></i>
+                            <span class="mm-text mmc-dropdown-delay animated fadeIn">پیگیری درخواست</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("MyArchive", "Cartable")">
+                            <i class="bmenu-icon fa fa-archive"></i>
+                            <span class="mm-text mmc-dropdown-delay animated fadeIn">آرشیو من</span>
+                        </a>
+                    </li>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="mm-dropdown mm-dropdown-root active open">
+                            <a href="javascript:void(0)"><i class="bmenu-icon fa fa-info"></i><span class="mm-text mmc-dropdown-delay animated fadeIn">اطلاعات پایه</span></a>
+                            <ul class="mmc-dropdown-delay animated fadeInLeft fadeInRight">
+                                <div class="mmc-title">اطلاعات پایه</div>
+
+                                <li>
+                                    <a href="@Url.Action("Index", "BaseInfoUsers")">
+                                        <i class="bmenu-icon fa fa-info-circle"></i><span class="mm-text"></span>
+                                        معرفی کاربران سیستم
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("Index","UnivercityStructure")">
+                                        <i class="bmenu-icon fa fa-trello"></i><span class="mm-text"></span>
+                                        ساختار دانشگاه
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("Index", "UserAdmin")">
+                                        <i class="bmenu-icon fa fa-won"></i><span class="mm-text"></span>
+                                        انتساب نقش ها
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("Index", "Stage")">
+                                        <i class="bmenu-icon fa fa-shield"></i><span class="mm-text"></span>
+                                        تعریف مراحل
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("Users", "Dashboard")">
+                                        <i class="bmenu-icon fa fa-user"></i><span class="mm-text"></span>
+                                        کاربران
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("Index", "Definitions")">
+                                        <i class="bmenu-icon fa fa-cog"></i><span class="mm-text"></span>
+                                        تنظیمات عمومی
+                                    </a>
+                                </li>
+                            </ul>
+                        </li> }
+                </ul> <!-- / .navigation -->
+
+            </div> <!-- / #main-menu-inner -->
+        </div> <!-- / #main-menu -->
+        <!-- /4. $MAIN_MENU -->
+        <div id="content-wrapper">
+            @RenderBody()
+        </div> <!-- / #content-wrapper -->
+        <div id="main-menu-bg">
+            <p>dksfhkdshfksdhfksdhfkhdk dckhx </p>
+        </div>
+    </div>
+
+
+    <!-- Get jQuery from Google CDN -->
+    <!--[if !IE]><![endif]--> -->
+    <script src="~/Content/assets/javascripts/jquery.min.js"></script>
+    <!-- <![endif]-->
+    <!--[if lte IE 9]>
+        <script type="text/javascript"> window.jQuery || document.write('<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js">' + "<" + "/script>"); </script>
+    <![endif]-->
+
+
+    <script src="~/Content/assets/javascripts/bootstrap.min.js"></script>
+    <script src="~/Content/assets/javascripts/landerapp.min.js"></script>
+    <script type="text/javascript">
+        init.push(function () {
+            //
+        });
+        window.LanderApp.start(init);
+
+        $('.navigation').on('click', 'li', function () {
+            $('.navigation li.active').removeClass('active');
+            $(this).addClass('active');
+        });
+    </script>
+
+
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryLinq")
+    <script src="~/Content/jquery-easyui-1.4.2/jquery.easyui.min.js"></script>
+    <script src="~/Content/jquery-easyui-1.4.2/easyui-rtl.js"></script>
+    <script src="~/Content/waiting/jquery.waiting.min.js"></script>
+    <script src="~/Scripts/myValidator.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.2.0.min.js"></script>
+    @RenderSection("scripts", required: false)
+    <script src="~/signalr/hubs"></script>
+    <script>
+
+        $('#lstMsgNotifications').slimScroll({ height: 250 });
+        //$('#main-navbar-messages').slimScroll({ height: 250 });
+    </script>
+    <script>
+        var chub = $.connection.cartableHub;
+        $.connection.hub.logging = true;
+
+        chub.client.sendNotification = function (message) {
+            $('#lstMsgNotifications').append(message);
+            $('#notificationCount').text(parseInt($('#notificationCount').text()) + 1);
+        };
+
+        chub.client.getCartableCount = function (value) {
+            $('#cartableCount').text(value);
+        }
+        $.connection.hub.start().done(function () {
+            chub.server.join();
+        });
+    </script>
+</body>
+</html>

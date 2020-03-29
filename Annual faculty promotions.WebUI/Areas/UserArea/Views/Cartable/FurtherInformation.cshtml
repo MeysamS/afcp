@@ -1,0 +1,254 @@
+﻿@using Annual_faculty_promotions.Core.Enums
+@model Annual_faculty_promotions.Core.Domain.FurtherInformation
+@{
+    var Id = Model.Id == null ? 0 : Model.Id;
+}
+<ul class="breadcrumb breadcrumb-page">
+    <li><a href="javascript:void(0)">صفحه اصلی</a></li>
+    <li><a href="javascript:void(0)">کارتابل</a></li>
+    <li class="active"><a href="javascript:void(0)">اطلاعات تکمیلی</a></li>
+</ul>
+<div class="page-header">
+    <div class="row">
+        <div class="pull-left col-xs-8">
+
+            <span><img class="img-circle img-thumbnail" style="width: 50px; height: 50px" src="@Url.Content("~/Content/Images/Avatars/" + Model.Request.User.Profile.Avatar)" alt="" /> </span>&nbsp;&nbsp;&nbsp;
+            شماره درخواست: <strong id="current-rating-example">@Model.Id</strong>&nbsp;&nbsp;&nbsp;
+            نام و نام خانوادگی درخواست کننده : <strong id="your-rating-example">@Model.Request.User.Profile.Name &nbsp; @Model.Request.User.Profile.Family</strong><br><br>
+
+        </div>
+
+        <div class="pull-right col-xs-12 col-sm-auto">
+            <a href="@Url.Action("Index", "Cartable")" class="btn btn-warning btn-labeled" style="width: 100%;"><span class="btn-label icon fa fa-undo"></span>برگشت به کارتابل</a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-9">
+        <div class="panel widget-messages">
+            <div class="panel-heading">
+                <span class="panel-title"><i class="panel-title-icon fa fa-info"></i>اطلاعات تکمیلی</span>
+            </div>
+            <div class="panel-body">
+                @if (Model.HasExecutivePosts)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>پست اجرایی</span>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="javascript:void(0)" title="" class="title">@Model.ExecutivePostName</a>
+                        </div>
+                    </div>
+                }
+                @if (Model.OfficersStudyPhD)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>@FurtherInformationType.مامور_به_تحصیل_در_مقطع_دکتری_داخل_یا_خارج.ToString().Replace("_", " ")</span>
+                        </div>
+                        <div class="col-md-3">
+                            <a onclick="showAttach(this)" futype="@Convert.ToInt32(FurtherInformationType.مامور_به_تحصیل_در_مقطع_دکتری_داخل_یا_خارج)" href="javascript:void(0)" class="title">
+                                <span class="fa fa-paperclip"></span>
+                                (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.مامور_به_تحصیل_در_مقطع_دکتری_داخل_یا_خارج))
+                            </a>
+                        </div>
+                    </div>
+                }
+                @if (Model.TypeOfPartTimeWorkNoconnectionOtherUniversity)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>@FurtherInformationType.نوع_همکاری_نیمه_وقت_بدون_هیچگونه_ارتباط_با_سایر_دانشگاهها.ToString().Replace("_", " ")</span>
+                        </div>
+                        <div class="col-md-3">
+                            <a onclick="showAttach(this)" futype="@Convert.ToInt32(FurtherInformationType.نوع_همکاری_نیمه_وقت_بدون_هیچگونه_ارتباط_با_سایر_دانشگاهها)" href="javascript:void(0)" class="title">
+                                <span class="fa fa-paperclip"></span>
+                                (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.نوع_همکاری_نیمه_وقت_بدون_هیچگونه_ارتباط_با_سایر_دانشگاهها))
+                            </a>
+                        </div>
+                    </div>
+                }
+                @if (Model.TypeOfPartTimeButEmployeesOtherUniversity)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>@FurtherInformationType.نوع_همکاری_نیمه_وقت_اما_به_صورت_تمام_وقت_شاغل_در_سایر_دانشگاهها_با_ارائه_حکم_کارگزینی_مبنی_بر_اعطای_پایه_سالیانه_دردانشگاه_دولتی.ToString().Replace("_", " ")</span>
+                        </div>
+                        <div class="col-md-3">
+                            <a onclick="showAttach(this)" futype="@Convert.ToInt32(FurtherInformationType.نوع_همکاری_نیمه_وقت_اما_به_صورت_تمام_وقت_شاغل_در_سایر_دانشگاهها_با_ارائه_حکم_کارگزینی_مبنی_بر_اعطای_پایه_سالیانه_دردانشگاه_دولتی)" href="javascript:void(0)" class="title">
+                                <span class="fa fa-paperclip"></span>
+                                (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.نوع_همکاری_نیمه_وقت_اما_به_صورت_تمام_وقت_شاغل_در_سایر_دانشگاهها_با_ارائه_حکم_کارگزینی_مبنی_بر_اعطای_پایه_سالیانه_دردانشگاه_دولتی))
+                            </a>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.TypeOfFullTimeButRetired)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>@FurtherInformationType.نوع_همکاری_تمام_وقت_اما_بازنشسته_از_سایردانشگاههای_وابسته.ToString().Replace("_", " ")</span>
+                        </div>
+                        <div class="col-md-3">
+                            <a onclick="showAttach(this)" futype="@Convert.ToInt32(FurtherInformationType.نوع_همکاری_تمام_وقت_اما_بازنشسته_از_سایردانشگاههای_وابسته)" href="javascript:void(0)" class="title">
+                                <span class="fa fa-paperclip"></span>
+                                (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.نوع_همکاری_تمام_وقت_اما_بازنشسته_از_سایردانشگاههای_وابسته))
+                            </a>
+                        </div>
+                    </div>
+                }
+                @if (Model.TypeOfFullTimeButNoRetired)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>@FurtherInformationType.نوع_همکاری_تمام_وقت_اما_غیر_بازنشسته_در_صورت_استفاء.ToString().Replace("_", " ")</span>
+                        </div>
+                        <div class="col-md-3">
+                            <a onclick="showAttach(this)" futype="@Convert.ToInt32(FurtherInformationType.نوع_همکاری_تمام_وقت_اما_غیر_بازنشسته_در_صورت_استفاء)" href="javascript:void(0)" class="title">
+                                <span class="fa fa-paperclip"></span>
+                                (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.نوع_همکاری_تمام_وقت_اما_غیر_بازنشسته_در_صورت_استفاء))
+                            </a>
+                        </div>
+                    </div>
+                }
+                @if (Model.GraduationDaneshvari)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>اخذ مدرک دانشوری با استفاده از آیین نامه طرح دانشوری دانشگاه</span>
+                        </div>
+
+                    </div>
+                }
+                @if (Model.FreedmanOrCaptive)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>آزادگان،اسرا،مفقودین</span>
+                        </div>
+                        <div class="col-md-3">
+                            <a onclick="showAttach(this)" futype="@Convert.ToInt32(FurtherInformationType.مستندات_آزادگان_اسرا_مفقودین) " href="javascript:void(0)" class="title">
+                                <span class="fa fa-paperclip"></span>
+                                (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.مستندات_آزادگان_اسرا_مفقودین))
+                            </a>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.IsVeteran)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>جانباز</span>
+                        </div>
+                        <div class="col-md-3">
+                            <a onclick="showAttach(this)" futype="@Convert.ToInt32(FurtherInformationType.مستندات_جانبازی) " href="javascript:void(0)" class="title">
+                                <span class="fa fa-paperclip"></span>
+                                (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.مستندات_جانبازی))
+                            </a>
+                        </div>
+                    </div>
+                }
+                @if (Model.Fighter)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>رزمنده</span>
+                        </div>
+                        <div class="col-md-3">
+                            <a onclick="showAttach(this)" futype="@Convert.ToInt32(FurtherInformationType.مستندات_رزمنده) " href="javascript:void(0)" class="title">
+                                <span class="fa fa-paperclip"></span>
+                                (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.مستندات_رزمنده))
+                            </a>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.HasPhDNoOfficersStudy)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>دارای دکترای تخصصی غیر مامور به تحصیل</span>
+                        </div>
+
+                    </div>
+                }
+                @if (Model.HasMaternityLeave)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>دارای مرخصی استعلاجی زایمان</span>
+                        </div>
+
+                    </div>
+                }
+                @if (Model.HasPhDIncludingMilitary)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>استفاده از طرح مشمولین متخصص دوره دکتری تخصصی</span>
+                        </div>
+
+                    </div>
+                }
+
+                @if (Model.TakingSabbatical)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>@FurtherInformationType.مجوز_سازمان_مرکزی_برای_فرصت_مطالعاتی.ToString().Replace("_", " ")</span>
+                        </div>
+                        <div class="col-md-3">
+                            <a futype="@Convert.ToInt32(FurtherInformationType.مجوز_سازمان_مرکزی_برای_فرصت_مطالعاتی)" href="javascript:void(0)" onclick="showAttach(this)" class="title">
+                                <span class="fa fa-paperclip"></span>
+                                (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.مجوز_سازمان_مرکزی_برای_فرصت_مطالعاتی))
+                            </a>
+                        </div>
+                    </div>
+                }
+                @if (Model.HasBasicDelayedPreviousYears)
+                {
+                    <div style="margin: 0" class="message unread">
+                        <div class="col-md-9">
+                            <span>دارای مطالبه پایه معوق</span>
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel widget-messages">
+            <div class="panel-heading">
+                <span class="panel-title"><i class="panel-title-icon fa fa-paperclip"></i>پیوست های مربوطه</span>
+            </div>
+            <div id="attach" class="panel-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        function showAttach(element) {
+            $.ajax({
+                url: '@Url.Action(MVC.UserArea.Cartable.OpenAttachsFromFurtherInformation())',
+                dataType: 'html',
+                data: {furtherInformationId:'@Id', furtherInformationType: $(element).attr('futype') },
+                type: 'get',
+                success: function (result) {
+                    $('#attach').html(result);
+                },
+                error: function () {
+
+                }
+            });
+        }
+    </script>
+
+}

@@ -1,0 +1,18 @@
+﻿
+<ul id="profile-tabs" class="nav nav-tabs">
+    <li class="dropdown pull-right tabdrop hide"></li>
+    <li class="active">
+        <a data-toggle="tab" href="#profile-tabs-board" onclick="BoardPartial();">تخته پیامکی</a>
+    </li>
+    <li>
+        <a data-toggle="tab" href="#profile-tabs-activity" onclick="ActivityPartial();">جدول زمانی فعالیتها</a>
+    </li>
+</ul>
+<div class="tab-content tab-content-bordered panel-padding" style="background-color:#fcfcfc">
+    <div id="profile-tabs-board" style="height:800px" class="widget-article-comments tab-pane panel no-padding no-border fade active in">
+        @Html.Partial("_Board")
+    </div>
+    <div id="profile-tabs-activity" class="tab-pane fade">
+
+    </div>
+</div>

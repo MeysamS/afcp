@@ -1,0 +1,24 @@
+﻿@model Annual_faculty_promotions.Core.Domain.Stage
+
+@using (Html.BeginForm("Create", "Stage", FormMethod.Post, new { id = "frmAddStage", @class = "form-horizontal" }))
+{
+ <div class="form-group form-group-sm">
+        @Html.LabelFor(model => model.Name, new { @class = "col-sm-3 control-label" })
+        <div class="col-sm-9">         
+            @Html.TextBoxFor(model => model.Name, new { @class = "form-control input-sm" })
+            @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group form-group-sm">
+        @Html.LabelFor(model => model.Active, new { @class = "col-sm-3 control-label" })
+        <div class="col-sm-9">         
+            @Html.TextBoxFor(model => model.Active, new { @class = "form-control input-sm" })
+            @Html.ValidationMessageFor(m => m.Active, "", new { @class = "text-danger" })
+        </div>
+    </div>
+}
+
+
+
+
+

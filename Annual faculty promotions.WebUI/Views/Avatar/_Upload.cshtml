@@ -1,0 +1,82 @@
+﻿<div class="row">
+    <div id="avatar-result" class="text-center">
+        <img src="@Url.Content("~/Content/Images/App/profilepicture.png")" class="avatar img-circle img-thumbnail fa" alt="">
+    </div>
+    <div id="avatar-upload-box">
+        @using (Ajax.BeginForm("_Upload", "Avatar", new AjaxOptions() { HttpMethod = "POST" }, new { enctype = "multipart/form-data", id = "avatar-upload-form" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <input type="file" name="files" class="text-center center-block well well-sm">
+
+            <div class="upload-file-notice">
+                حداکثر اندازه فایل <span id="avatar-max-size"></span> MB
+            </div>
+        }
+        <div class="upload-progress ui hidden transition">
+            <div class="upload-percent-value right">0%</div>
+            <div class="upload-percent-bar right"></div>
+        </div>
+        <div id="upload-status"></div>
+
+    </div>
+
+
+</div>
+<div class="row">
+    <div id="avatar-crop-box" class="ui hidden transition">
+        <button class="btn btn-primary" onclick="saveAvatar()"><i class="fa fa-check"></i></button>
+        <div class="jc-demo-box">
+            <img src="" id="crop-avatar-target" alt="Uploaded image"/>
+            <div id="preview-pane">
+                <div class="preview-container" style="direction: ltr">
+                    <img src="" class="jcrop-preview" alt="Preview"/>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+     
+    
+    <div class="ui inverted divider"></div>
+
+    <script>
+        function saveAvatar() {
+            var img = $('#preview-pane .preview-container img');
+            //$('#avatar-crop-box button').addClass('disabled');
+            //var mymodel = $('#avatar-upload-form').serialize();
+            var avatarData =
+                {
+
+                    w: img.css('width'),
+                    h: img.css('height'),
+                    l: img.css('marginLeft'),
+                    t: img.css('marginTop'),
+                    fileName: img.attr('src')
+                };
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Save","Avatar",null,"http")',
+                traditional: true,
+                data: JSON.stringify(avatarData),
+                contentType: 'application/json; charset=utf-8'
+            }).done(function (data) {
+                if (data.success === true) {
+                    $('#avatar-result img').attr('src', data.avatarFileLocation);
+                    $('#AvatarPath').val(data.avatarFileLocation);
+                    $('#Avatar').val(data.avatarId);
+                    $('#avatar-result').removeClass('ui hidden transition');
+                    $('#avatar-result').attr("src", "");
+                    $('#avatar-crop-box').addClass('ui hidden transition'); 
+
+                } else {
+                    $.messager.alert('پیام سیستم', data.errorMessage);
+                }
+            }).fail(function (e) {
+                $.messager.alert('پیام سیستم', 'Cannot upload avatar at this time');
+            });
+        }
+    </script>

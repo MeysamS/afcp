@@ -1,0 +1,28 @@
+﻿@using Postal
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SendEmailWithPostal</title>
+</head>
+<body>
+    <link href="~/Content/bootstrap.rtl.css" rel="stylesheet" />
+    <div>
+        Subject: @ViewBag.Title
+        <div style="background: rgba(243, 215, 82, 0.50); padding: 25px;">
+
+            <div style="font-family: Tahoma; text-align: right; direction: rtl; font-size: 90%; color: #808080; line-height: 2.5em;">
+                @* می توان یک تصویر رو در پستال جای داد *@
+                @Html.EmbedImage("~/content/images/checkmark.gif")
+                <div style="font-weight: bold"></div> @ViewBag.body<br />
+                @if (!String.IsNullOrEmpty(ViewBag.link))
+                {
+                    <div style="text-align: center; font-weight: bold; text-decoration: none">
+                        <a href="@ViewBag.link">اینجا کلیک کنید</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</body>
+</html>

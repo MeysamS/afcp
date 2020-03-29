@@ -1,0 +1,57 @@
+﻿@using System.Web.Mvc.Html
+@using Annual_faculty_promotions.Core.Enums
+@using Annual_faculty_promotions.WebUI.Helpers
+@using Annual_faculty_promotions.WebUI.Helpers.Util
+@using Microsoft.AspNet.Identity
+@model Annual_faculty_promotions.WebUI.Areas.UserArea.Models.ProfileViewModel
+
+<style>
+    .flexnav {
+        -webkit-padding-start: 0px;
+        -webkit-margin-before: 0px;
+        -webkit-margin-after: 0px;
+        margin-top: 0px;
+        margin-right: auto;
+        margin-bottom: 0px;
+        margin-left: auto;
+        width: 90%;
+        position: relative;
+        z-index: 1;
+    }
+</style>
+<div class="row">
+    <div class="panel widget-messages-alt">
+        <div class="panel-heading">
+            <span class="panel-title">پیامی را ارسال نمائید</span>
+        </div>
+        <div class="panel-body">
+            <div class="form-group" style="margin-top: 10px">
+                <div class="col-md-11">
+                    @Html.TextAreaFor(m => m.Messaging.Text, new { @class = "form-group form-control expanding-input-target", style = "overflow: hidden; word-wrap: break-word; resize: horizontal; height: 87px;", rows = "3", placeholder = "نوشتن پیام" })
+                    <div class="form-group">
+                        <div class="col-sm-4">
+                            @Html.DropDownList("EnumRoles", (SelectList)ViewBag.EnumRoles, "انتخاب کنید...", new {@class = "form-control input-sm", style = "width: 200px", id = "EnumRoles" })
+                        </div>
+                        <div id="divComboRecievers" class="col-md-8">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr class="no-panel-padding-h panel-wide" />
+</div>
+<div class="panel widget-messages-alt">
+    <div class="panel-heading">
+        <span class="panel-title"><i class="panel-title-icon fa fa-envelope"></i>لیست پیام ها</span>
+    </div> <!-- / .panel-heading -->
+    <div class="panel-body padding-sm">
+        <div id="divMessagesList" class="messages-list">
+            @Html.Partial("_MessagesList",Model)
+        </div> <!-- / .messages-list -->
+        <a id="btnShowMessages" href="javascript:(void)" pagecount="1" class="messages-link" >نمایش بیشتر</a> @*onclick="appendMessages(this);"*@
+    </div> <!-- / .panel-body -->
+</div>
+
+@*@Scripts.Render("~/bundles/jqueryval")*@

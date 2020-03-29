@@ -1,0 +1,124 @@
+﻿@using System.Web.Mvc.Html
+@using Microsoft.AspNet.Identity
+@model Annual_faculty_promotions.Core.Domain.User.Profile
+
+@{
+    int userId = int.Parse(User.Identity.GetUserId());
+}
+@Styles.Render("~/Content/persianDate/css")
+@Styles.Render("~/Content/Jcrop/css")
+@Styles.Render("~/Content/avatar/css")
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <div  class="bpanel bpanel-default">
+            <div class="bpanel-body">
+                <div class="row">
+                    <div class="col-md-12">
+                      
+                            <h4>تکمیل مرحله عضویت در سامانه</h4>
+                            <hr />
+                           
+                                <div class="alert alert-danger alert-dismissable">
+                                    <a class="bpanel-close close" data-dismiss="alert">×</a>
+                                    <i class="fa fa-info-circle"></i>
+                                    کاربر گرامی پرنمودن اطلاعات زیر جهت فعالیت در سامانه الزامیست
+                                </div>
+                          
+
+                            <div class="col-md-4 col-sm-6 col-xs-12">
+                                @{
+                                    Html.RenderAction("_Upload", "Avatar");
+                                }
+
+                            </div>
+                            <!-- edit form column -->
+                            <div class="col-md-8 col-sm-6 col-xs-12 personal-info">
+                                @using (Html.BeginForm("AddProfile", "Account", FormMethod.Post, new { id = "formprofile", @class = "form-horizontal", role = "form", enctype = "multipart/form-data" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    @Html.ValidationSummary(true, null, new { @class = "alert alert-warning" })
+                                    @Html.TextBox("Id", userId, new { type = "hidden" })
+                                    @Html.HiddenFor(p => p.Avatar)
+                                    <div class="form-group">
+                                        <label class="col-lg-3 control-label">نام:</label>
+                                        <div class="col-lg-8">
+                                            @Html.TextBoxFor(f => f.Name, new { @class = "form-control", style = "max-width: none" })
+                                            @Html.ValidationMessageFor(f => f.Name)
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-lg-3 control-label">نام خانوادگی:</label>
+                                        <div class="col-lg-8">
+                                            @Html.TextBoxFor(f => f.Family, new {@class = "form-control", style = "max-width: none"})
+                                            @Html.ValidationMessageFor(f => f.Family)
+                                        </div>
+                                    </div>
+                                     <div class="form-group">
+                                        <label class="col-lg-3 control-label">آخرین مدرک تحصیلی:</label>
+                                        <div class="col-lg-8">
+                                            @Html.EnumDropDownListFor(p => p.LastGradeEducation, new Dictionary<string, object> {{"class", "form-control"}})
+                                            @Html.ValidationMessageFor(f => f.LastGradeEducation)
+                                        </div>
+                                    </div>
+                                      <div class="form-group">
+                                        <label class="col-lg-3 control-label">رشته تحصیلی:</label>
+                                        <div class="col-lg-8">
+                                            @Html.TextBoxFor(f => f.FieldofStudy, new {@class = "form-control", style = "max-width: none"})
+                                            @Html.ValidationMessageFor(f => f.FieldofStudy)
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-lg-3 control-label">جنسیت:</label>
+                                        <div class="col-lg-8">
+                                            @Html.EnumDropDownListFor(p => p.Gender, new Dictionary<string, object> {{"class", "form-control"}})
+                                            @Html.ValidationMessageFor(f => f.Gender)
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-lg-3 control-label">تاریخ تولد:</label>
+                                        <div class="col-lg-3">
+                                            @Html.EditorFor(f => f.BrithDate, new { @class = "form-control", style = "max-width: none", placeholder = "تاریخ تولد" })
+                                            @Html.ValidationMessageFor(f => f.BrithDate)
+                                        </div>
+                                        <label class="col-lg-2 control-label">تاریخ استخدام:</label>
+                                        <div class="col-lg-3">
+                                            @Html.EditorFor(f => f.EmployeeDate, new { @class = "form-control", style = "max-width: none", placeholder = "تاریخ استخدام" })
+                                            @Html.ValidationMessageFor(f => f.EmployeeDate)
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-lg-3 control-label">تلفن همراه:</label>
+                                        <div class="col-lg-8">
+                                            @Html.TextBoxFor(f => f.Phone, new { @class = "form-control", style = "max-width: none", placeholder = "تلفن همراه" })
+                                            @Html.ValidationMessageFor(f => f.Phone)
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 control-label"></label>
+                                        <div class="col-md-8">
+                                            <input class="btn btn-primary" value="ثبت" type="submit">
+                                            @*<a href="#" id="btnSaveProfile" class="btn btn-primary btn-lg">ثبت</a>*@
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+@section scripts{
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryAjaxForm")
+    @Scripts.Render("~/bundles/PersianDate")
+    @Scripts.Render("~/bundles/avatar")
+    @Scripts.Render("~/bundles/jqueryCrop")
+
+    <script>
+                
+        $("#Phone").mask("(9) 999-9999999");
+
+       
+    </script>
+}

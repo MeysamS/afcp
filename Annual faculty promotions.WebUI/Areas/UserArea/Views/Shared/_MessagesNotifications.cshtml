@@ -1,0 +1,40 @@
+﻿@using Annual_faculty_promotions.WebUI.Helpers.Util
+@model IEnumerable<Annual_faculty_promotions.Core.Domain.Messaging>
+
+<li class="nav-icon-btn nav-icon-btn-success dropdown">
+    <a href="#messages" class="dropdown-toggle" data-toggle="dropdown">
+        <span id="notificationCount" class="label" style="font-size: 9px; z-index: 1">@Model.Count()</span>
+        <i class="nav-icon fa fa-envelope"></i>
+        <span class="small-screen-text">پیام های وارده</span>
+    </a>
+    <!-- MESSAGES -->
+    <!-- Javascript -->
+    <script>
+
+        $('#lstMsgNotifications').slimScroll({ height: 250 });
+    </script>
+    <!-- / Javascript -->
+    <div class="dropdown-menu widget-messages-alt no-padding" style="width: 300px;">
+        <div id="lstMsgNotifications" class="messages-list" style="overflow: hidden; width: auto; height: 250px;">
+            @foreach (var item in Model)
+            {
+                <div class="message">
+                        <img src="@Url.Content("~/Content/Images/Avatars/" + item.UserSender.Profile.Avatar)" alt="" class="message-avatar"/>
+                        <a href="@Url.Action("Message","Dashboard",new{messageId=item.Id})" class="message-subject">@item.Text</a>
+                        <div class="message-description">
+                            فرستنده:<a href="javascript:(void)" title="">
+                                @if (item.UserSender != null && item.UserSender.Profile != null)
+                                {
+                                    @(item.UserSender.Profile.Name + " " + item.UserSender.Profile.Family)
+                                }
+                            </a>|
+                            گیرنده <a href="javascript:(void)" title="">@(item.UserReciever.Profile.Name + " " + item.UserReciever.Profile.Family)</a>
+                            &nbsp;&nbsp;·&nbsp;&nbsp;
+                            @RelativeTimeCalculator.Calculate(item.CreatedDate)
+                        </div>
+                    </div>
+              }
+        </div>
+        <a href="javascript:(void)" class="messages-link">موارد بیشتر...</a>
+    </div> <!-- / .dropdown-menu -->
+</li>

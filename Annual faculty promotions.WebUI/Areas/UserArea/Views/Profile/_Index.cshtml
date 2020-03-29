@@ -1,0 +1,73 @@
+﻿@model Annual_faculty_promotions.WebUI.Areas.UserArea.Models.ProfileViewModel
+@{
+    ViewBag.Title = "Index";
+    //Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+}
+
+<div class="right-col">
+    <hr class="profile-content-hr no-grid-gutter-h" />
+    <div class="profile-content">
+        <ul id="profile-tabs" class="nav nav-tabs">
+            <li class="dropdown pull-right tabdrop hide"></li>
+            <li class="active">
+                <a data-toggle="tab" href="#profile-tabs-board" onclick="BoardPartial();">تخته پیامکی</a>
+            </li>
+            <li>
+                <a data-toggle="tab" href="#profile-tabs-activity" onclick="ActivityPartial();">جدول زمانی فعالیتها</a>
+            </li>
+        </ul>
+        <div class="tab-content tab-content-bordered panel-padding" style="background-color:#fcfcfc">
+            <div id="profile-tabs-board" class="widget-article-comments tab-pane panel no-padding no-border fade active in">
+                @Html.Partial("_Board")
+            </div>
+            <div id="profile-tabs-activity" class="tab-pane fade">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*@Scripts.Render("~/bundles/jqueryAjaxForm")*@
+<script src="~/Content/assets/javascripts/bootstrap.min.js"></script>
+<script>
+    function BoardPartial() {
+        $.get('@Url.Action("Board", "Profile", new {area = "UserArea"}, "http")', null, function (result) {
+            if (result) {
+                $('#profile-tabs-board').html(result);
+            } else {
+                $.messager.show({
+                    title: 'پیام سیستم',
+                    msg: "خطا در لود فرم",
+                    showType: 'show'
+                });
+            }
+        }, 'html');
+    }
+
+    function SendMessage(reciever) {
+        var text = $("#Messaging_Text").val();
+        $.ajax({
+            cashe: false,
+            url: '@Url.Action("SendMEssage", "Profile", new {area = "UserArea"}, "http")',
+            type: 'Post',
+            dataType: 'json',
+            data: { text: text, recieverRoleName: reciever },
+            success: function (result) {
+                if (result.isError) {
+                    myalert(result.Msg, 'danger');
+                    return;
+                } else {
+                    $('#Messaging_Text').val("");
+                    myalert(result.Msg, 'success');
+                    BoardPartial();
+                    $('a.l-btn').linkbutton({ disabled: false });
+                }
+            },
+            error: function (xhr, status) {
+                xhr.responseText();
+            }
+        });
+    }
+</script>
+

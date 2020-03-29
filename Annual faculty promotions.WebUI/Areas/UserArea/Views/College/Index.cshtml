@@ -1,0 +1,186 @@
+﻿<link href="~/Content/bootstrap.rtl.css" rel="stylesheet" />
+<table id="dgCollege"></table>
+
+<div id="dlgAddCollege" class="easyui-dialog" style="width: 500px; height: 140px; padding: 10px 20px"
+     closed="true" buttons="#dlgAddCollege-buttons">
+    @Html.Partial("_Create")
+    <div id="dlgAddCollege-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconcls="icon-ok" onclick=" savecollege() " style="width: 90px">ذخیره</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconcls="icon-cancel" onclick=" javascript: $('#dlgAddCollege').dialog('close'); " style="width: 90px">انصراف</a>
+    </div>
+</div>
+
+
+<div id="dlgEditCollege" class="easyui-dialog" style="width: 500px; height: 140px; padding: 10px 20px"
+     closed="true" buttons="#dlgEditCollege-buttons">
+</div>
+<div id="dlgEditCollege-buttons">
+    <a href="javascript:void(0)" class="easyui-linkbutton c6 " iconcls="icon-ok" onclick=" updateCollege() " style="width: 90px">ذخیره</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconcls="icon-cancel" onclick=" javascript: $('#dlgEditCollege').dialog('close'); " style="width: 90px">انصراف</a>
+</div>
+@section scripts{
+    @Scripts.Render("/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryAjaxForm")
+
+
+    <script>
+        $('#frmAddCollege').ajaxForm();
+        $('#dgCollege').datagrid(
+        {
+            toolbar:
+            [
+                {
+                    text: 'جدید',
+                    iconCls: 'icon-add',
+                    handler: function() {
+                        $('#dlgAddCollege').dialog('open').dialog('setTitle', 'تعریف دانشکده');
+                    }
+                }, '-',
+                {
+                    text: 'جستجو',
+                    iconCls: 'icon-search',
+                    handler: function() {
+                        $.messager.alert("Action", "Search");
+                    }
+                }, '-',
+                {
+                    text: 'راهنما',
+                    iconCls: 'icon-help',
+                    handler: function() {
+                        $.messager.alert("Action", "Help");
+                    }
+                }
+            ],
+            title: 'لیست سایز ها',
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: '480',
+            singleSelect: 'true',
+            sortName: 'Name',
+            sortOrder: 'asc',
+            pagination: true,
+            pagePosition: 'bottom',
+            striped: 'true',
+            fitColumns: 'true',
+            pageSize: 10,
+            url: '@Url.Action("Getcolleges", "College", new {area = "UserArea"})',
+            columns: [
+                [
+                    { field: 'Name', title: 'نام', width: 300 },
+                    {
+                        field: 'Action',
+                        title: 'عملیات',
+                        width: 100,
+                        formatter: function(value, rows, index) {
+                            return '<a reaserchId=' + rows.Id + ' href="javascript:void(0)"  onclick="destroyCollege(this)"><span class="fa fa-paperclip"></span></a>&nbsp&nbsp&nbsp' +
+                                '<a collegeId=' + rows.Id + ' href="javascript:void(0)" onclick="showdlgEdit(this)"><img src="/content/jquery-easyui-1.4.2/themes/icons/pencil.png" title="ویرایش"/></a>';
+                        }
+                    }
+                ]
+            ]
+        });
+
+        var pager = $('#dgCollege').datagrid('getPager');
+        $(pager).pagination({
+            pageSize: 10,
+            showPageList: true,
+            pageList: [10, 20, 50],
+            beforePageText: 'صفحه',
+            afterPageText: 'از {pages}',
+            displayMsg: 'نمایش اطلاعات  {from} تا {to} از {total}'
+        });
+
+        function savecollege() {
+            if ($('#frmAddCollege').valid()) {
+                $('#frmAddCollege').ajaxSubmit({
+                    cashe: false,
+                    url: '@Url.Action("Create", "College", new {area = "UserArea"}, "http")',
+                    type: 'Post',
+                    dataType: 'json',
+                    data: $('#frmAddCollege').serialize(),
+                    success: function(result) {
+                        $('#frmAddCollege').form('clear');
+                        $('#dgCollege').datagrid('reload');
+                        $.messager.show({
+                            title: 'پیام سیستم',
+                            msg: result.Msg,
+                            showType: 'show'
+                        });
+                    },
+                    error: function(xhr, status) {
+                        xhr.responseText();
+                    }
+                });
+            } else {
+                return $(this).form('validate');
+            }
+        }
+
+        function destroyCollege(element) {
+            $.messager.confirm('confirm', 'حذف شود؟', function(r) {
+                if (r) {
+                    $.post('@Url.Action("Delete", "UnivercityStructure", new {area = "UserArea"}, "http")',
+                        { id: node.id }, function (result) {
+                        if (result.success) {
+                            $.messager.show({
+                                title: 'پیام سیستم',
+                                msg: result.Msg,
+                                showType: 'show'
+                            });
+                            $('#dgCollege').datagrid('reload');
+                        } else {
+                            $.messager.show({
+                                title: 'پیام سیستم',
+                                msg: result.Msg,
+                                showType: 'show'
+                            });
+                        }
+                    }, 'json');
+                }
+            });
+        }
+
+        function showdlgEdit(element) {
+            $.ajax({
+                url: '@Url.Action("Edit", "College", new {area = "UserArea"})',
+                dataType: 'html',
+                type: 'get',
+                data: {collegeId: $(element).attr('collegeId')},
+                success: function(result) {
+                    $('#dlgEditCollege').html(result);
+                    $('#dlgEditCollege').dialog('open').dialog('setTitle', 'ویرایش دانشکده');
+                },
+                error: function() {
+
+                }
+            });
+        }
+
+
+        function updateCollege() {
+            if ($('#frmEditCollege').valid()) {
+                $('#frmEditCollege').ajaxSubmit({
+                    cashe: false,
+                    url: '@Url.Action("Edit", "College", new {area = "UserArea"}, "http")',
+                    type: 'Post',
+                    dataType: 'json',
+                    data: $('#frmEditCollege').serialize(),
+                    success: function(result) {
+                        $('#frmEditCollege').form('clear');
+                        $('#dgCollege').datagrid('reload');
+                        $.messager.show({
+                            title: 'پیام سیستم',
+                            msg: result.Msg,
+                            showType: 'show'
+                        });
+                    },
+                    error: function(xhr, status) {
+                        xhr.responseText();
+                    }
+                });
+            } else {
+                return $(this).form('validate');
+            }
+        }
+    </script>
+}

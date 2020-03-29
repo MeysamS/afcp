@@ -1,0 +1,22 @@
+﻿@model Annual_faculty_promotions.Core.Domain.UnivercityStructure
+@using (Html.BeginForm("Create", "UnivercityStructure", FormMethod.Post, new { id = "frmAddStructure", @class = "form-horizontal" }))
+{
+  
+    
+      @Html.TextBoxFor(model => model.ParentId,new{hidden="hidden"})
+       @Html.TextBoxFor(model => model.Level,new{hidden="hidden"})
+    <div class="form-group form-group-sm">
+        @Html.LabelFor(model => model.Name, new {@class = "col-sm-2 control-label"})
+        <div class="col-sm-7">
+            @Html.TextBoxFor(model => model.Name, new {@class = "form-control input-sm"})
+        </div>
+    </div>
+    <div class="form-group form-group-sm">
+        @Html.LabelFor(model => model.HasChild, new { @class = "col-sm-2 control-label" })
+        <div class="col-sm-8">
+            @Html.EditorFor(model => model.HasChild, new { @class = "form-control input-sm" })
+        </div>
+    </div>
+}
+
+

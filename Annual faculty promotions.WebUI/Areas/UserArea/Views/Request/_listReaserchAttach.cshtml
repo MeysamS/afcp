@@ -1,0 +1,63 @@
+﻿@model Annual_faculty_promotions.Core.Domain.EducationalResearch
+<table id="dgListReaserchAttach"></table>
+<script>
+    $('#dgListReaserchAttach').datagrid(
+       {
+           loadMsg: 'شکیبا باشید...',
+           rownumbers: true,
+           height: '480',
+           singleSelect: 'true',
+           sortName: 'Name',
+           sortOrder: 'asc',
+           pagePosition: 'bottom',
+           striped: 'true',
+           fitColumns: 'true',
+           pageSize: 10,
+           url: '@Url.Action(MVC.UserArea.Request.GetReaserchAttach())',
+           queryParams:{researchId:'@Model.Id'},
+           columns: [
+           [
+           { field: 'FileName', title: 'نام', width: 300 },
+           {
+               field: 'Action',
+               title: 'عملیات',
+               width: 100,
+               formatter: function (value, rows, index) {
+                   return '<a reaserchid=' + rows.Id + ' href="javascript:void(0)" onclick="destroyAttachResearch(' + rows.Id + ')"><img class="delete"  src="/content/jquery-easyui-1.4.2/themes/icons/cancel.png"/></a>&nbsp&nbsp&nbsp';
+               }
+           }
+           ]
+           ]
+       });
+
+    function destroyAttachResearch(element) {
+        if (Number(element) <= 0)
+        {
+            $.messager.alert('Warning', 'رکورد مورد نظر قابل حذف نیست!');
+            return;
+        }
+        $.messager.confirm('confirm', 'حذف شود؟', function (r) {
+            if (r) {
+                $.post('@Url.Action(MVC.UserArea.Request.destroyAttachResearch(), "http")',
+                {
+                    researchAttachId: element
+                }, function (result) {
+                    if (!result.isError) {
+                        $.messager.show({
+                            title: 'پیام سیستم',
+                            msg: result.Msg,
+                            showType: 'show'
+                        });
+                        $('#dgListReaserchAttach').datagrid('reload');
+                    } else {
+                        $.messager.show({
+                            title: 'پیام سیستم',
+                            msg: result.Msg,
+                            showType: 'show'
+                        });
+                    }
+                }, 'json');
+            }
+        });
+    }
+</script>

@@ -1,0 +1,510 @@
+﻿@using System.Web.Mvc.Html
+@using Annual_faculty_promotions.Core.Enums
+@using Annual_faculty_promotions.WebUI.Helpers.Util
+@model Annual_faculty_promotions.WebUI.Areas.UserArea.Models.AddRequestViewModel
+@{
+    var numList = Enum.GetValues(typeof(EmploymentStatus));
+}
+@Styles.Render("~/Content/persianDate/css")
+@Styles.Render("~/Content/Jcrop/css")
+@Styles.Render("~/Content/avatar/css")
+
+<div class="bpanel colourable">
+    @using (Html.BeginForm("Create", "Request", FormMethod.Post, new { id = "addRequestForm", enctype = "multipart/form-data" }))
+    {
+        <div class="bpanel-body">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-sm-3">
+                        <label>شماره درخواست :</label>
+                        @Html.DisplayFor(p => p.Request.Id, new { @class = "form-control input-sm", style = "color:blue" })
+                    </div>
+                    <div class="col-sm-2">
+                        <label>پایه :</label>
+                        @Html.TextBoxFor(model => model.Request.Grade, new { @class = "form-control input-sm", style = "float:left;max-width: 100px" })
+                    </div>
+                    <div id="divLastDateGrade" class="col-sm-5">
+                        <label>تاریخ آخرین ترفیع :</label>
+                        @Html.EditorFor(model => model.LastDateGrade, new { @class = "form-control", style = "max-width: none", placeholder = "تاریخ آخرین ترفیع" })
+                    </div>
+                    @if (!Model.IsSent)
+                    {
+                        <div id="divsaverequest" class="col-sm-2">
+                            @*<a href="javascript:void(0)" onclick="saverequest()" class=" btn btn-primary btn-labeled"><span class="btn-label icon fa fa-save"></span>ذخیره</a>*@
+                            <span onclick="saverequest();" class="btn btn-success btn-labeled">
+                                <span class="btn-label icon fa fa-save"></span>ثبت درخواست
+                            </span>
+                        </div>
+                    }
+                </div>
+                <hr />
+
+                @Html.HiddenFor(model => model.Request.Id)
+
+                <div class="form-group">
+                    <div class="col-sm-6">
+                        <label>وضعیت استخدام :</label>
+                        @foreach (object radiotext in numList)
+                        {
+                            if (@Model.Request != null)
+                            {
+                                @Html.RadioButtonFor(model => model.Request.EmploymentStatus, radiotext.ToString())@radiotext.ToString().Replace("_", " ")
+                                <span>&nbsp;&nbsp;&nbsp;</span>}
+                            else
+                            {
+                                @Html.RadioButton("EmploymentStatus", radiotext.ToString())@radiotext.ToString().Replace("_", " ")
+                                <span>&nbsp;&nbsp;&nbsp;</span>}
+                        }
+                    </div>
+                </div>
+                <div class="form-inline">
+                    <div class="col-sm-6">
+                        <label>گروه آموزشی :</label>
+                        @if (Model.Request == null)
+                        {
+
+                            @Html.DropDownList("UnivercityStructureId",
+                                (SelectList)ViewBag.Department, "", new { @class = "form-control input-sm", style = "width: 200px" })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(model => model.Request.UnivercityStructureId,
+                                (SelectList)ViewBag.Department, "", new { @class = "form-control input-sm", style = "width: 200px" })
+                        }
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label>مرتبه علمی :</label>
+                        @if (Model.Request == null)
+                        {
+                            @Html.EnumDropDownListFor(p => p.AcademicDegree, new Dictionary<string, object> { { "class", "form-control input-sm" } })
+                        }
+                        else
+                        {
+                            @Html.EnumDropDownListFor(p => p.Request.AcademicDegree, new Dictionary<string, object> { { "class", "form-control input-sm" } })
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div class="bpanel">
+            <div class="note note-primary">اطلاعات تکمیلی</div>
+
+            @Html.HiddenFor(model => model.FurtherInformation.Id)
+            @Html.HiddenFor(model => model.FurtherInformation.RequestId)
+            <div class="bpanel-body">
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.HasExecutivePosts)
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <lable>پست اجرایی</lable>
+                    </div>
+                    <div class="col-md-6">
+                        @Html.TextBoxFor(model => model.FurtherInformation.ExecutivePostName, new { @class = "form-control input-sm", disabled = "disabled", style = "max-width:none" })
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.OfficersStudyPhD)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <lable>مامور به تحصیل در مقطع دکتری</lable>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-inline">
+                            (پیوست)
+                            <input type="file" name="OfficersStudyPhDUpload" multiple="multiple" disabled="disabled" class="form-control input-sm" id="OfficersStudyPhDUpload" accept=".pdf,.jpg,.jpeg,.bmp,.png,gif">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <a href="javascript:void(0)">
+                            <span class="fa fa-paperclip"></span>
+                            (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.مامور_به_تحصیل_در_مقطع_دکتری_داخل_یا_خارج))
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.TypeOfPartTimeWorkNoconnectionOtherUniversity)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <lable>نوع همکاری نیمه وقت بدون هیچگونه ارتباط با سایر دانشگاهها</lable>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-inline">
+                            (پیوست)
+                            <input type="file" name="TypeOfPartTimeWorkNoconnectionOtherUniversityUpload" multiple="multiple" disabled="disabled" class="form-control input-sm" id="TypeOfPartTimeWorkNoconnectionOtherUniversityUpload" accept=".pdf,.jpg,.jpeg,.bmp,.png,gif">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <a href="javascript:void(0)">
+                            <span class="fa fa-paperclip"></span>
+                            (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.نوع_همکاری_نیمه_وقت_بدون_هیچگونه_ارتباط_با_سایر_دانشگاهها))
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.TypeOfPartTimeButEmployeesOtherUniversity)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <lable>نوع همکاری نیمه وقت اما به صورت تمام وقت شاغل در سایر دانشگاهها (حکم کارگزینی)</lable>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-inline">
+                            (پیوست)
+                            <input type="file" name="TypeOfPartTimeButEmployeesOtherUniversityUpload" multiple="multiple" disabled="disabled" class="form-control input-sm" id="TypeOfPartTimeButEmployeesOtherUniversityUpload" accept=".pdf,.jpg,.jpeg,.bmp,.png,gif">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <a href="javascript:void(0)">
+                            <span class="fa fa-paperclip"></span>
+                            (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.نوع_همکاری_نیمه_وقت_اما_به_صورت_تمام_وقت_شاغل_در_سایر_دانشگاهها_با_ارائه_حکم_کارگزینی_مبنی_بر_اعطای_پایه_سالیانه_دردانشگاه_دولتی))
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.TypeOfFullTimeButRetired)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <lable>نوع همکاری تمام وقت اما بازنشسته از سایر دانشگاهها</lable>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-inline">
+                            (پیوست)
+                            <input type="file" name="TypeOfFullTimeButRetiredUpload" multiple="multiple" disabled="disabled" class="form-control input-sm" id="TypeOfFullTimeButRetiredUpload" accept=".pdf,.jpg,.jpeg,.bmp,.png,gif">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <a href="javascript:void(0)">
+                            <span class="fa fa-paperclip"></span>
+                            (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.نوع_همکاری_تمام_وقت_اما_بازنشسته_از_سایردانشگاههای_وابسته))
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.TypeOfFullTimeButNoRetired)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <lable>نوع همکاری تمام وقت اما غیر بازنشسته در صورت استفاء</lable>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-inline">
+                            (پیوست)
+                            <input type="file" name="TypeOfFullTimeButNoRetiredUpload" multiple="multiple" disabled="disabled" class="form-control input-sm" id="TypeOfFullTimeButNoRetiredUpload" accept=".pdf,.jpg,.jpeg,.bmp,.png,gif">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <a href="javascript:void(0)">
+                            <span class="fa fa-paperclip"></span>
+                            (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.نوع_همکاری_تمام_وقت_اما_غیر_بازنشسته_در_صورت_استفاء))
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.GraduationDaneshvari)
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <lable>اخذ مدرک دانشوری با استفاده از آیین نامه طرح دانشوری دانشگاه</lable>
+                    </div>
+                </div>
+
+                <div class="bpanel panel-transparent">
+                    <div class="panel-heading" style="margin-bottom: 5px">
+                        <span class="panel-title">سهمیه ایثارگران</span>
+                    </div>
+                    <div id="comboEsargaran">
+                        <div class="row">
+                            <div class="col-md-1">
+                                <div class="switcher switcher-theme-square ">
+                                    @Html.CheckBoxFor(model => model.FurtherInformation.FreedmanOrCaptive)
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <lable>آزادگان،اسرا،مفقودین</lable>
+                            </div>
+                            <div class="col-md-3 ">
+                                @Html.EnumDropDownListFor(p => p.FurtherInformation.FreedmanOrCaptiveType, new Dictionary<string, object> { { "class", "form-control input-sm disabled" } })
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-inline">
+                                    (پیوست)
+                                    <input type="file" name="FreedmanOrCaptiveTypeUpload" multiple="multiple" disabled="disabled" class="form-control input-sm" id="FreedmanOrCaptiveTypeUpload" accept=".pdf,.jpg,.jpeg,.bmp,.png,gif">
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <a href="javascript:void(0)">
+                                    <span class="fa fa-paperclip"></span>
+                                    (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.مستندات_آزادگان_اسرا_مفقودین))
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-1">
+                                <div class="switcher switcher-theme-square ">
+                                    @Html.CheckBoxFor(model => model.FurtherInformation.IsVeteran)
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <lable>جانباز</lable>
+                            </div>
+                            <div class="col-md-3">
+                                @Html.EnumDropDownListFor(p => p.FurtherInformation.VeteranType, new Dictionary<string, object> { { "class", "form-control input-sm" } })
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-inline">
+                                    (پیوست)
+                                    <input type="file" name="VeteranTypeUpload" multiple="multiple" disabled="disabled" class="form-control input-sm" id="VeteranTypeUpload" accept=".pdf,.jpg,.jpeg,.bmp,.png,gif">
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <a href="javascript:void(0)">
+                                    <span class="fa fa-paperclip"></span>
+                                    (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.مستندات_جانبازی))
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-1">
+                                <div class="switcher switcher-theme-square ">
+                                    @Html.CheckBoxFor(model => model.FurtherInformation.Fighter)
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <lable>رزمنده</lable>
+                            </div>
+                            <div class="col-md-3">
+                                @Html.EnumDropDownListFor(p => p.FurtherInformation.FighterType, new Dictionary<string, object> { { "class", "form-control input-sm" } })
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-inline">
+                                    (پیوست)
+                                    <input type="file" name="FighterTypeUpload" multiple="multiple" disabled="disabled" class="form-control input-sm" id="FighterTypeUpload" accept=".pdf,.jpg,.jpeg,.bmp,.png,gif">
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <a href="javascript:void(0)">
+                                    <span class="fa fa-paperclip"></span>
+                                    (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.مستندات_رزمنده))
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.HasPhDNoOfficersStudy)
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <lable>دارای دکترای تخصصی غیر مامور به تحصیل</lable>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.HasMaternityLeave)
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <lable>دارای مرخصی استعلاجی زایمان</lable>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.HasPhDIncludingMilitary)
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <lable>استفاده از طرح مشمولین متخصص دوره دکتری تخصصی</lable>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.PassPhDPassa)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <lable>گذراندن دوره پسا دکتری</lable>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-inline">
+                            (پیوست)
+                            <input type="file" name="PassPhDPassaUpload" multiple="multiple" disabled="disabled" class="form-control input-sm" id="PassPhDPassaUpload" accept=".pdf,.jpg,.jpeg,.bmp,.png,gif">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <a href="javascript:void(0)">
+                            <span class="fa fa-paperclip"></span>
+                            (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.گواهی_دوره_پسا_دکترا))
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.TakingSabbatical)
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <lable>درحال گذراندن فرصت مطالعاتی</lable>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-inline">
+                            (پیوست)
+                            <input type="file" name="TakingSabbaticalUpload" multiple="multiple" disabled="disabled" class="form-control input-sm" id="TakingSabbaticalUpload" accept=".pdf,.jpg,.jpeg,.bmp,.png,gif">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <a href="javascript:void(0)">
+                            <span class="fa fa-paperclip"></span>
+                            (@Model.AttachmentFurtherInformations.Count(x => x.FurtherInformationType == FurtherInformationType.مجوز_سازمان_مرکزی_برای_فرصت_مطالعاتی))
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">
+                        <div class="switcher switcher-theme-square ">
+                            @Html.CheckBoxFor(model => model.FurtherInformation.HasBasicDelayedPreviousYears)
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <lable>دارای مطالبه پایه معوق</lable>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/jqueryAjaxForm")
+@Scripts.Render("~/bundles/PersianDate")
+@Scripts.Render("~/bundles/avatar")
+@Scripts.Render("~/bundles/jqueryCrop")
+
+<script>
+    //$(function () {
+    //    alert(2);
+    //    alert($('#LastDateGrade').val());
+    //    if ($('#LastDateGrade').val().trim() != "") {
+    //    $('#divLastDateGrade :input').attr("readonly", "readonly");}
+    //});
+
+    $(function () {
+        $('.switcher :input[type=checkbox]').each(function () {
+            $(this).switcher({
+                theme: 'square',
+                on_state_content: '<span class="fa fa-check"></span>',
+                off_state_content: '<span class="fa fa-times"></span>'
+            });
+
+            $(this).on('change', function () {
+
+                if ($(this).attr("id") == 'FurtherInformation_HasExecutivePosts') {
+                    if ($(this).is(':checked')) {
+                        $('#FurtherInformation_ExecutivePostName').removeAttr('disabled');
+                    } else {
+                        $('#FurtherInformation_ExecutivePostName').attr('disabled', 'disabled');
+                    }
+
+                } else if (($(this).attr("id") == 'FurtherInformation_OfficersStudyPhD')) {
+                    if ($(this).is(':checked')) {
+                        $('#OfficersStudyPhDUpload').removeAttr('disabled');
+                    } else {
+                        $('#OfficersStudyPhDUpload').attr('disabled', 'disabled');
+                    }
+                } else if (($(this).attr("id") == 'FurtherInformation_TypeOfPartTimeWorkNoconnectionOtherUniversity')) {
+                    if ($(this).is(':checked')) {
+                        $('#TypeOfPartTimeWorkNoconnectionOtherUniversityUpload').removeAttr('disabled');
+                    } else {
+                        $('#TypeOfPartTimeWorkNoconnectionOtherUniversityUpload').attr('disabled', 'disabled');
+                    }
+                } else if (($(this).attr("id") == 'FurtherInformation_TypeOfPartTimeButEmployeesOtherUniversity')) {
+                    if ($(this).is(':checked')) {
+                        $('#TypeOfPartTimeButEmployeesOtherUniversityUpload').removeAttr('disabled');
+                    } else {
+                        $('#TypeOfPartTimeButEmployeesOtherUniversityUpload').attr('disabled', 'disabled');
+                    }
+                } else if (($(this).attr("id") == 'FurtherInformation_TypeOfFullTimeButRetired')) {
+                    if ($(this).is(':checked')) {
+                        $('#TypeOfFullTimeButRetiredUpload').removeAttr('disabled');
+                    } else {
+                        $('#TypeOfFullTimeButRetiredUpload').attr('disabled', 'disabled');
+                    }
+                } else if (($(this).attr("id") == 'FurtherInformation_TypeOfFullTimeButNoRetired')) {
+                    if ($(this).is(':checked')) {
+                        $('#TypeOfFullTimeButNoRetiredUpload').removeAttr('disabled');
+                    } else {
+                        $('#TypeOfFullTimeButNoRetiredUpload').attr('disabled', 'disabled');
+                    }
+                } else if (($(this).attr("id") == 'FurtherInformation_Fighter')) {
+                    if ($(this).is(':checked')) {
+                        $('#FurtherInformation_FighterType').removeAttr('disabled');
+                        $('#FighterTypeUpload').removeAttr('disabled');
+                    } else {
+                        $('#FurtherInformation_FighterType').attr('disabled', 'disabled');
+                        $('#FighterTypeUpload').attr('disabled', 'disabled');
+                    }
+                } else if (($(this).attr("id") == 'FurtherInformation_FreedmanOrCaptive')) {
+                    if ($(this).is(':checked')) {
+                        $('#FurtherInformation_FreedmanOrCaptiveType').removeAttr('disabled');
+                        $('#FreedmanOrCaptiveTypeUpload').removeAttr('disabled');
+                    } else {
+                        $('#FurtherInformation_FreedmanOrCaptiveType').attr('disabled', 'disabled');
+                        $('#FreedmanOrCaptiveTypeUpload').attr('disabled', 'disabled');
+                    }
+                } else if (($(this).attr("id") == 'FurtherInformation_IsVeteran')) {
+                    if ($(this).is(':checked')) {
+                        $('#FurtherInformation_VeteranType').removeAttr('disabled');
+                        $('#VeteranTypeUpload').removeAttr('disabled');
+                    } else {
+                        $('#FurtherInformation_VeteranType').attr('disabled', 'disabled');
+                        $('#VeteranTypeUpload').attr('disabled', 'disabled');
+                    }
+                } else if (($(this).attr("id") == 'FurtherInformation_PassPhDPassa')) {
+                    if ($(this).is(':checked')) {
+                        $('#PassPhDPassaUpload').removeAttr('disabled');
+                    } else {
+                        $('#PassPhDPassaUpload').attr('disabled', 'disabled');
+                    }
+                } else if (($(this).attr("id") == 'FurtherInformation_TakingSabbatical')) {
+                    if ($(this).is(':checked')) {
+                        $('#TakingSabbaticalUpload').removeAttr('disabled');
+                    } else {
+                        $('#TakingSabbaticalUpload').attr('disabled', 'disabled');
+                    }
+                }
+                //updateDisplay();
+            });
+        });
+    });
+</script>

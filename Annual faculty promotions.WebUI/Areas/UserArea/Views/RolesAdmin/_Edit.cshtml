@@ -1,0 +1,14 @@
+﻿@model Annual_faculty_promotions.WebUI.Models.RoleViewModel
+@using (Html.BeginForm("Edit", "RolesAdmin", FormMethod.Post, new { id = "frmEditRole", @class = "form-horizontal" }))
+{
+    @Html.TextBoxFor(model=>model.Id,new{hidden="hidden"})
+    <div class="form-group form-group-sm">
+        @Html.LabelFor(model => model.Name, new { @class = "col-sm-3 control-label" })
+        <div class="col-sm-9">
+            @Html.TextBoxFor(model => model.Name, new { @class = "form-control input-sm" })
+            @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+        </div>
+    </div>
+}
+
+

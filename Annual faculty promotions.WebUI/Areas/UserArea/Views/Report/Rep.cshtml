@@ -1,0 +1,24 @@
+﻿@using System.Web.UI.WebControls;
+@using Stimulsoft.Report.Mvc;
+@{
+    ViewBag.Title = "Rep";
+}
+
+
+<div>
+    @*@Html.Stimulsoft().RenderMvcViewerScripts()*@
+    @Html.Stimulsoft().RenderMvcViewerFxScripts()
+    @*@Html.Stimulsoft().StiMvcViewer(new StiMvcViewerOptions()
+        {
+            ActionGetReportSnapshot = "GetReportSnapShot"
+        })*@
+
+    @Html.Stimulsoft().StiMvcViewerFx(new StiMvcViewerFxOptions()
+{
+    Theme = StiMvcViewerFxOptions.Themes.Black,
+    ActionGetReportSnapshot = "GetReportSnapShot",
+    ActionExportReport = "ViewExportReport",
+    Width = Unit.Percentage(100),
+    Height = 600,
+})
+</div>

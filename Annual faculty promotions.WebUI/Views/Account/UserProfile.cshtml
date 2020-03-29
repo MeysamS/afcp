@@ -1,0 +1,132 @@
+﻿@using Annual_faculty_promotions.WebUI.Helpers
+@using System.Web.Mvc.Html
+@using Microsoft.AspNet.Identity
+@{
+    Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="row profile">
+            <div class="col-md-2" style="border-left:1px solid gainsboro ">
+                <div class="profile-sidebar">
+                    <!-- SIDEBAR USERPIC -->
+                    <div class="profile-userpic">
+                        <img src="@Url.Content("~/Content/Images/Avatars/"+User.Avatar())" class="img-responsive" alt="" style="width: 120px;height:120px">
+                    </div>
+                    <!-- END SIDEBAR USERPIC -->
+                    <!-- SIDEBAR USER TITLE -->
+                    <div class="profile-usertitle">
+                        <div class="profile-usertitle-name">
+                            @User.FullName()
+                        </div>
+                        @*<div class="profile-usertitle-job">
+                                Developer
+                            </div>*@
+                    </div>
+                    <!-- END SIDEBAR USER TITLE -->
+                    <!-- SIDEBAR BUTTONS -->
+                    <div class="profile-userbuttons">
+                        <button id="1" type="button" class="btn btn-success btn-sm" onclick="GetDetails(this.id)">پیام ها</button>
+                        <button type="button" class="btn btn-danger btn-sm">خروج</button>
+                    </div>
+                    <!-- END SIDEBAR BUTTONS -->
+                    <!-- SIDEBAR MENU -->
+                    <div class="profile-usermenu">
+                        <ul id="profileMenu" class="nav">
+                            @*<li id="2" class="active">
+                                    <a href="#">
+                                        <i class="glyphicon glyphicon-home"></i>
+                                    </a>
+                                </li>*@
+                            <li id="3" class="active">
+                                <a href="#">
+                                    <i class="glyphicon glyphicon-user"></i>
+                                    تنظیمات حساب کاربری
+                                </a>
+                            </li>
+                            <li id="4">
+                                <a href="#" target="_blank">
+                                    <i class="glyphicon glyphicon-ok"></i>
+                                    رویدادهای شما
+                                </a>
+                            </li>
+                            <li id="5">
+                                <a href="#">
+                                    <i class="fa fa-list-alt"></i>
+                                    سفارشات من
+                                </a>
+                            </li>
+                            <li id="6">
+                                <a href="#">
+                                    <i class="fa fa-heart"></i>
+                                    لیست مورد علاقه
+                                </a>
+                            </li>
+                            <li id="7">
+                                <a href="#">
+                                    <i class="fa fa-comment"></i>
+                                    نظرات من
+                                </a>
+                            </li>
+                            <li id="8">
+                                <a href="#">
+                                    <i class="fa fa-desktop"></i>
+                                    تابلوی اعلانات
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- END MENU -->
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div id="profileContent" class="profile-content">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    @Scripts.Render("~/bundles/jqueryAjaxForm")
+@Scripts.Render("~/bundles/jquery")
+    <script>
+        function GetDetails(opType) {
+            var url = "";
+            if (opType == 1) {
+                url = '@Url.Action("Index","Profile",new{area="UserArea"})';
+            }
+                @*else if (opType == 2) {
+                url = '@Url.Action("Register","Account")';
+            }*@
+            else if (opType == 3) {
+                url = '@Url.Action("AddProfile","Account")';
+            }
+            $.ajax({
+                cache: false,
+                url: url,
+                type: "Get",
+                dataType: "html",
+                //data: UserId,
+                success: function (data) {
+                    $("#profileContent").html(data);
+                    //$.validator.unobtrusive.parse("#formprofile");
+                },
+                error: function (xhr, state) {
+                    $.messager.alert('پیام سیستم', xhr.responseText());
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            GetDetails(@ViewBag.opType);
+        });
+
+        $('#profileMenu li').click(function (e) {
+            GetDetails(this.id);
+        });
+    </script>
+}

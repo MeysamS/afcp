@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سامانه ترفیع اعضای هیئت علمی دانشگاه آزاد</title>
+
+    @Scripts.Render("~/bundles/modernizr")
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+    <link href="~/Content/assets/stylesheets/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/assets/stylesheets/landerapp.min.css" rel="stylesheet" type="text/css">
+    <link href="~/Content/assets/stylesheets/pages.min.css" rel="stylesheet" type="text/css">
+    <link href="~/Content/assets/stylesheets/rtl.min.css" rel="stylesheet" type="text/css">
+    <link href="~/Content/assets/stylesheets/themes.min.css" rel="stylesheet" type="text/css">
+</head>
+<body class="theme-dust main-menu-animated main-navbar-fixed main-menu-fixed right-to-left" style="font-family: tahoma">
+    <script>
+        var init = [];
+    </script>
+
+    @RenderBody()
+    @Scripts.Render("~/bundles/jquery")
+    <script src="~/Content/assets/javascripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/respond.min.js"></script>
+    <script src="~/Content/assets/javascripts/landerapp.min.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

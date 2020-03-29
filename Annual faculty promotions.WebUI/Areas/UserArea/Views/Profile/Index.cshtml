@@ -1,0 +1,200 @@
+﻿@model Annual_faculty_promotions.WebUI.Areas.UserArea.Models.ProfileViewModel
+@{
+    ViewBag.Title = Model.User.Profile.Name + " " + Model.User.Profile.Family;
+    Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+}
+<div class="page-header">
+    <h1><i class="fa fa-bar-chart-o page-header-icon"></i>&nbsp;&nbsp;پروفایل</h1>
+</div>
+<div class="page-profile right-to-left">
+    <div class="profile-row" style="margin-top: 90px">
+        <div class="left-col">
+            <div class="profile-block">
+                <div class="panel profile-photo">
+                    <img src="@Url.Content("~/Content/Images/Avatars/" + @Model.User.Profile.Avatar)" alt="">
+                </div>
+                
+                <ul class="nav nav-pills bs-tabdrop-example">
+                    <b>@(Model.User.Profile.Name + " " + Model.User.Profile.Family)</b>
+                    <li class="dropdown pull-left tabdrop">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)">
+                            <i class="fa fa-bars"></i> <b class="caret"></b>
+                        </a>
+                        <ul style="text-align: right" class="dropdown-menu">
+                            <li><a href="javascript:void(0)" onclick="messagePartial()">پبام ها</a></li>
+                            <li><a href="javascript:void(0)" >رویدادها</a></li> @*onclick="activityPartial()"*@
+                            <li><a href="javascript:void(0)" onclick="editProfilePartial()">ویرایش پروفایل</a></li>
+                            <li><a href="javascript:void(0)" data-toggle="tab">تنظیمات خصوصی</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+
+            <div class="panel panel-transparent">
+                <div class="panel-heading">
+                    <span class="panel-title">مشخصات</span>
+                </div>
+                <div class="list-group">
+                    <h5 class="list-group-item"><strong>آخرین مدرک تحصیلی</strong> </h5><h5 style="margin-right: 10px">
+                        @Model.User.Profile.LastGradeEducation @Model.User.Profile.FieldofStudy
+                    </h5>
+                    <h5 class="list-group-item"><strong>نقش ها</strong></h5>
+                    @foreach (var item in Model.Roles)
+                    {
+                        <h5 style="margin-right: 10px">@item.PersianName</h5>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="right-col">
+            <div id="dvContent" class="profile-content">
+                @*@Html.Partial("_Messages", Model)*@
+                @{ Html.RenderAction("RenderParialMessage", "Profile"); }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript" src="@Url.Content("~/signalr/hubs")"></script>
+ 
+  <script>
+        $('#EnumRoles').change(function () {
+            var obj = $('#EnumRoles').find(':selected').val();
+            $.ajax({
+                cashe: false,
+                url: '@Url.Action("RenderComboRecievers", "Profile", new {area = "UserArea"}, "http")',
+                type: 'get',
+                dataType: 'html',
+                data: { enumvalue: obj },
+                success: function (result) {
+                    $('#divComboRecievers').html(result);
+                },
+                error: function (xhr, status) {
+                    //alert("خطا در برنامه!");
+                    xhr.responseText();
+                }
+            });
+        });
+</script>
+    <script>
+        var chub = $.connection.cartableHub;
+        $.connection.hub.logging = true;
+        chub.client.sendMessage = function() {
+            messagesList();
+        };
+        $.connection.hub.start().done(function() {
+
+        });
+
+        function SendMessage(e) {
+            var text = $("#Messaging_Text").val();
+            if (text === '') {
+                $.messager.alert('پیام سیستم', "لطفا متن پیام را وارد کنید!");
+                return;
+            }
+            var reciever = $(e).attr('data-rl');
+            //var EnumRoles = $('#EnumRoles').find(':selected').index;
+            //var Recievers = $('#Recievers').find(':selected').val();
+            var EnumRoles = document.getElementById("EnumRoles");
+            var Recievers = document.getElementById("Recievers");
+            if (Number(EnumRoles.options[EnumRoles.selectedIndex].index) <= 0 || Number(Recievers.options[Recievers.selectedIndex].index) <= 0) {
+                $.messager.alert('پیام سیستم', "لطفا گیرنده پیام را انتخاب کنید!");
+                return;
+            }
+            $.post('@Url.Action("SendMessage", "Profile", new {area = "UserArea"}, "http")',
+            { text: text, EnumRoles:EnumRoles.options[EnumRoles.selectedIndex].value, Recievers: Recievers.options[Recievers.selectedIndex].value }, function (result) {
+                if (!result.isError) {
+                    chub.server.addNewMessageNotification(result.messageid).done(function() {
+                        $('#Messaging_Text').val("");
+                        myalert(result.Msg, 'success');
+                        $('a.l-btn').linkbutton({ disabled: false });
+                    });
+                } else {
+                    myalert(result.Msg, "danger");
+                }
+            }, 'json');
+
+        }
+
+        function messagesList() {
+            $.ajax({
+                cashe: false,
+                url: '@Url.Action("RenderMessagesList", "Profile", new {area = "UserArea"}, "http")',
+                type: 'get',
+                dataType: 'html',
+                success: function(result) {
+                    $('#divMessagesList').html(result);
+                },
+                error: function(xhr, status) {
+                    xhr.responseText();
+                }
+            });
+        }
+        function messagePartial() {
+            $.ajax({
+                cashe: false,
+                url: '@Url.Action("RenderParialMessage", "Profile", new {area = "UserArea"}, "http")',
+                type: 'get',
+                dataType: 'html',
+                success: function (result) {
+                    $('#dvContent').html(result);
+                },
+                error: function (xhr, status) {
+                    xhr.responseText();
+                }
+            });
+        }
+
+        function activityPartial() {
+            $.get('@Url.Action("Activity", "Profile", new {area = "UserArea"}, "http")', null, function(result) {
+                if (result) {
+                    $('#dvContent').html(result);
+                } else {
+                    $.messager.show({
+                        title: 'پیام سیستم',
+                        msg: "خطا در لود فرم",
+                        showType: 'show'
+                    });
+                }
+            }, 'html');
+        }
+
+        function editProfilePartial() {
+            $.get('@Url.Action("RenderPartialEditProfile", "Profile", new {area = "UserArea"}, "http")', null, function(result) {
+                if (result) {
+                    $('#dvContent').html(result);
+                } else {
+                    $.messager.show({
+                        title: 'پیام سیستم',
+                        msg: "خطا در لود فرم",
+                        showType: 'show'
+                    });
+                }
+            }, 'html');
+        }
+
+        function appendMessages(e) {
+            //var l = Ladda.create(element);
+            //l.start();
+            var pageCount = Number($(e).attr('pagecount')) + 1;
+            $.ajax({
+                url: '@Url.Action(MVC.UserArea.Profile.RenderMessagesList())',
+                cache: false,
+                dataType: 'html',
+                type: 'post',
+                data: { page: pageCount }, //friend: $('#friend').is(":checked"), favorite: $('#favorite').is(":checked"),departmentId: Number($('#ddlDepartments').val()), userId: Number($('#ddlUsers').val())
+                success: function (result) {
+                    $("#divMessagesList").append(result);
+                    $('#btnShowMessages').attr('pagecount', pageCount);
+                    //l.stop();
+                },
+                error: function (result) {
+                    //l.stop();
+                    //$("#divActivities").html('<div class="col-lg-12 col-sm-12 col-xs-12"><div class="well with-header"><div class="alert alert-danger fade in radius-bordered alert-shadowed"><button class="close" data-dismiss="alert">×</button><i class="fa-fw fa fa-times"></i><strong>خطا در نمایش اطلاعات!!!</strong></div></div></div>');
+                }
+            });
+        }
+    </script>
+}

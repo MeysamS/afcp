@@ -1,0 +1,67 @@
+﻿@using Annual_faculty_promotions.Core.Enums
+@*@model IEnumerable<Annual_faculty_promotions.Core.Domain.Cartable>*@
+@model Annual_faculty_promotions.WebUI.Areas.UserArea.Models.TrackingRequestViewModel
+@{
+    Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+    var defaultRequestId = Model.RequestsId.FirstOrDefault();
+    var modelData = Model.Trackings.Where(x => x.RequestId == defaultRequestId).ToList();
+}
+<div class="page-header">
+    <h1><i class="fa fa-bar-chart-o page-header-icon"></i>&nbsp;&nbsp;پیگیری درخواست</h1>
+</div>
+
+<div class="bpanel bpanel-default">
+    <div class="bpanel-body">
+        <div class="row">
+            <div class="col-md-3">
+                @foreach (var item in Model.RequestsId)
+                {
+                    <a class="reqclick" data-reqid="@item" onclick="GetTracking($(this).attr('data-reqid'))" href="javascript:void(0)">
+                        <div class="tl-header now">درخواست شماره  @item</div>
+                    </a>
+                }
+            </div>
+            <div class="col-md-9">
+                <div id="dvTimeLineContent">
+                    @if (Model.Trackings.Any())
+                    {
+                        @Html.Partial("_GetTrakings", modelData)
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    $('a .reqclick').click(function () {
+        $.ajax({
+            url: '@Url.Action("GetTrakingsByRequestId", "Cartable", new {area = "UserArea"})',
+            dataType: 'html',
+            data: { reqId: $(this).attr('data-reqid') },
+            type: 'get',
+            success: function (result) {
+                $('#dvTimeLineContent').html(result);
+            },
+            error: function () {
+
+            }
+        });
+    })
+    function GetTracking(requestId) {
+        $.ajax({
+            url: '@Url.Action("GetTrakingsByRequestId", "Cartable", new {area = "UserArea"})',
+            dataType: 'html',
+            data: { reqId: requestId },
+            type: 'get',
+            success: function (result) {
+                $('#dvTimeLineContent').html(result);
+            },
+            error: function () {
+                $('#dvTimeLineContent').html("موردی یافت نشد!");
+            }
+        });
+    }
+</script>
+

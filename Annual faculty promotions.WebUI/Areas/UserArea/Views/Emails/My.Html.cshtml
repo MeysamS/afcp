@@ -1,0 +1,13 @@
+﻿@model Annual_faculty_promotions.Core.Common.MyEmail
+@{
+    ViewBag.Title = "My";
+    Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+}
+
+To: @Model.To
+From: ali.kalij@yahoo.com
+Subject: Example
+
+Hello,
+@Model.Message
+Thanks!

@@ -1,0 +1,172 @@
+﻿@{Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";}
+<ul class="breadcrumb breadcrumb-page">
+    <li><a href="javascript:void(0)">صفحه اصلی</a></li>
+    <li class="active"><a href="javascript:void(0)">تعریف ساختار دانشگاه</a></li>
+</ul>
+
+
+<div class="easyui-panel" style="padding:5px;margin-bottom: 5px">
+    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'" onclick="$('#dlgAddStructure').dialog('open').dialog('setTitle', 'جدید');">جدید</a>
+    <a id="btnStructureEdit" onclick="showdlgUnivercityEdit()" href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true">ویرایش</a>
+    <a id="btnStructureDelete" href="javascript:void(0)" onclick="destroyStructure();" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove',disabled:true">حذف</a>
+</div>
+
+<div class="easyui-panel" style="padding: 5px; height: 450px;">
+    <ul style="margin-top: 5px" id="uniTree"></ul>
+</div>
+
+
+<div id="dlgAddStructure" class="easyui-dialog" modal="true" style="width: 500px; height: 170px; padding: 10px 20px"
+     closed="true" buttons="#dlgAddStructure-buttons">
+    @Html.Partial("_Create")
+    <div id="dlgAddStructure-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconcls="icon-ok" onclick="saveStructure();" style="width: 90px">ذخیره</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconcls="icon-cancel" onclick=" javascript: $('#dlgAddStructure').dialog('close'); " style="width: 90px">انصراف</a>
+    </div>
+</div>
+
+<div id="dlgEditStructure" class="easyui-dialog" modal="true" style="width: 500px; height: 170px; padding: 10px 20px"
+     closed="true" buttons="#dlgEditStructure-buttons">
+</div>
+<div id="dlgEditStructure-buttons">
+    <a href="javascript:void(0)" class="easyui-linkbutton c6 " iconcls="icon-ok" onclick="updateStructure();" style="width: 90px">ذخیره</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconcls="icon-cancel" onclick=" javascript: $('#dlgEditStructure').dialog('close'); " style="width: 90px">انصراف</a>
+</div>
+
+@section scripts{
+
+    @Scripts.Render("~/bundles/jqueryAjaxForm")
+    <script>
+        $(function() {
+            $('[data-toggle]').tooltip({
+                placement: 'bottom'
+            });
+        });
+
+        $('#frmAddStructure').ajaxForm();
+
+        var selectedNodeId;
+
+        $('#uniTree').tree({
+            title: 'test',
+            url: '@Url.Action("GetStructuresTreeNode", "UnivercityStructure", new {area = "UserArea"})',
+            required: true,
+            lines: true,
+            fit: true,
+            onLoadSuccess: function() {
+                var node = $('#uniTree').tree('find', selectedNodeId);
+                if (node) {
+                    $('#uniTree').tree('select', node.target);
+                }
+            },
+            onSelect: function(node) {
+                selectedNodeId = node.id;
+                $('#ParentId').val(selectedNodeId);
+                $('#btnStructureEdit').linkbutton('enable');
+                $('#btnStructureDelete').linkbutton('enable');
+
+            }
+        });
+
+        function saveStructure() {
+            var node = $('#uniTree').tree('getSelected');
+            if (node != null) {
+                if (node.hasChild == false) {
+                    $.messager.alert('warning', 'امکان درج مقدار برای این ساختار وجود ندارد');
+                    myalert('امکان درج مقدار برای این ساختار وجود ندارد', 'danger');
+                    return;
+                }
+                $('#Level').val(node.level + 1);
+            } else {
+                $('#Level').val(1);
+            }
+
+            if ($('#frmAddStructure').valid()) {
+                $('#frmAddStructure').ajaxSubmit({
+                    cashe: false,
+                    url: '@Url.Action("Create", "UnivercityStructure", new {area = "UserArea"}, "http")',
+                    type: 'Post',
+                    dataType: 'json',
+                    data: $('#frmAddStructure').serialize(),
+                    success: function(result) {
+                        if (result.isError) {
+                            myalert(result.Msg, 'danger');
+                        } else {
+                            $('#Name').val('');
+                            $('#uniTree').tree('reload');
+                            myalert(result.Msg, 'success');
+                        }
+                    },
+                    error: function(xhr, status) {
+                        xhr.responseText();
+                    }
+                });
+            } else {
+                return $(this).form('validate');
+            }
+        }
+
+
+        function destroyStructure() {
+            $.messager.confirm('confirm', 'حذف شود؟', function(r) {
+                if (r) {
+                    var node = $('#uniTree').tree('getSelected');
+                    if (node == null) return;
+                    $.post('@Url.Action("Delete", "UnivercityStructure", new {area = "UserArea"}, "http")',
+                    { id: node.id }, function(result) {
+                        if (result.isError) {
+                            myalert(result.Msg, 'danger');
+                        } else {
+                            myalert(result.Msg, 'success');
+                            $('#uniTree').tree('reload');
+                        }
+                    }, 'json');
+                }
+            });
+        }
+
+        function showdlgUnivercityEdit() {
+            var node = $('#uniTree').tree('getSelected');
+            if (node == null) return;
+            $.ajax({
+                url: '@Url.Action("Edit", "UnivercityStructure", new {area = "UserArea"})',
+                dataType: 'html',
+                type: 'get',
+                data: { univercityId: node.id },
+                success: function(result) {
+                    $('#dlgEditStructure').html(result);
+                    $('#dlgEditStructure').dialog('open').dialog('setTitle', 'ویرایش');
+                },
+                error: function() {
+
+                }
+            });
+        }
+
+        function updateStructure() {
+            if ($('#frmEditStructure').valid()) {
+                $('#frmEditStructure').ajaxSubmit({
+                    cashe: false,
+                    url: '@Url.Action("Edit", "UnivercityStructure", new {area = "UserArea"}, "http")',
+                    type: 'Post',
+                    dataType: 'json',
+                    data: $('#frmEditStructure').serialize(),
+                    success: function(result) {
+                        if (result.isError) {
+                            myalert(result.Msg, 'danger');
+                        } else {
+                            $('#frmEditStructure').form('clear');
+                            $('#uniTree').tree('reload');
+                            myalert(result.Msg, 'success');
+                        }
+                    },
+                    error: function(xhr, status) {
+                        xhr.responseText();
+                    }
+                });
+            } else {
+                return $(this).form('validate');
+            }
+        }
+    </script>
+}

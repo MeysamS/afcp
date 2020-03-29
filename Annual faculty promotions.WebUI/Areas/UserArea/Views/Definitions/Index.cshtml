@@ -1,0 +1,287 @@
+﻿@model Annual_faculty_promotions.Core.Domain.Definitions
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+}
+
+<ul class="breadcrumb breadcrumb-page">
+    <li><a href="javascript:void(0)">صفحه اصلی</a></li>
+    <li class="active"><a href="javascript:void(0)">تنظیمات عمومی</a></li>
+</ul>
+@using (Html.BeginForm("Edit", "Definitions", FormMethod.Post, new { id = "DefinitionsForm", enctype = "multipart/form-data" }))
+{
+    @Html.HiddenFor(x => x.Id)
+    <div class="row">
+        <div class="form-horizontal">
+            <div class="col-md-12">
+                <!-- It can be fixed with bootstrap affix http://getbootstrap.com/javascript/#affix-->
+                <div style="background-color: white" class="well sidebar-nav">
+                    <h5>
+                        <i class="glyphicon glyphicon-home"></i>
+                        <small><b>مشخصات دانشگاه</b></small>
+                    </h5>
+                    <div class="row">
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>آرم دانشگاه</span>
+                            </div>
+                            <div class="col-md-5">
+                                <input type="file" id="FileLogo" name="FileLogo" class="form-control" data-options="prompt:'تصویر را انتخاب نمایید...'" />
+                                @Html.HiddenFor(m => m.Logo)
+                            </div>
+                            <div class="col-md-2">
+                                <img src="~/Content/Images/App/@Model.Logo" style="width:40px;height:40px;">
+                                @*<img src="@Url.Content("~/Content/Images/Avatars/" + (string.IsNullOrWhiteSpace(Model.Logo) ? "profilepicture.png" : Model.Logo))" class="img-responsive" alt="" style="width: 90px; height: 90px">*@
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>نام دانشگاه</span>
+                            </div>
+                            <div class="col-md-5">
+                                @Html.TextBoxFor(m => m.UniversityName, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-2">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>آدرس</span>
+                            </div>
+                            <div class="col-md-8">
+                                @Html.TextBoxFor(m => m.Address, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                    </div>
+                    <h5>
+                        <i class="glyphicon glyphicon-user"></i>
+                        <small><b>مشخصات سامانه پیامکی</b></small>
+                    </h5>
+                    <div class="row">
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>نام کاربری</span>
+                            </div>
+                            <div class="col-md-5">
+                                @Html.TextBoxFor(m => m.SMSUserName, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>کلمه عبور</span>
+                            </div>
+                            <div class="col-md-5">
+                                @Html.TextBoxFor(m => m.SMSPass, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>شماره سامانه</span>
+                            </div>
+                            <div class="col-md-5">
+                                @Html.TextBoxFor(m => m.SMSNumber, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>متن پیامک</span>
+                            </div>
+                            <div class="col-md-8">
+                                @Html.TextAreaFor(m => m.TextSMS, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+
+                    </div>
+                    <h5>
+                        <i class="glyphicon glyphicon-user"></i>
+                        <small><b>تنظیمات ارسال ایمیل</b></small>
+                    </h5>
+                    <div class="row">
+
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>زمان ارسال ایمیل هر</span>
+                            </div>
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(m => m.RepeatMail, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-2">
+                                <span>روز یک بار</span>
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>شروع ارسال ایمیل از</span>
+                            </div>
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(m => m.StartMail, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-6">
+                                <span>روز مانده به اتمام مهلت ارسال درخواست ترفیع</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>متن ایمیل اطلاعیه مهلت ارسال درخواست</span>
+                            </div>
+                            <div class="col-md-8">
+                                @Html.TextAreaFor(m => m.TextMailForDourtionRequest, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>هاست</span>
+                            </div>
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(m => m.SmtpHost, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-2">
+                                <span>آدرس ایمیل فرستنده</span>
+                            </div>
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(m => m.SmtpFrom, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>نام کاربری</span>
+                            </div>
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(m => m.SmtpUserName, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-2">
+                                <span class="pull-left">رمز عبور</span>
+                            </div>
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(m => m.SmtpPass, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-2">
+                                <span>شماره پورت</span>
+                            </div>
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(m => m.SmtpPort, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-2">
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                    </div>
+                    <h5>
+                        <i class="glyphicon glyphicon-user"></i>
+                        <small><b>اعضای کمیته ترفیعات</b></small>
+                    </h5>
+                    <div class="row">
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-3">
+                                <span>نام و نام خانوادگی</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span>سمت در دانشگاه</span>
+                            </div>
+                            <div class="col-md-3"><span>سمت در کمیته ترفیعات</span></div>
+                            <div class="col-md-1"></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-3">
+                                @Html.TextBoxFor(m => m.CommitteeName1, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-4">
+                                @Html.TextBoxFor(m => m.UniversPosition1, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(m => m.CommitteePosition1, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-3">
+                                @Html.TextBoxFor(m => m.CommitteeName2, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-4">
+                                @Html.TextBoxFor(m => m.UniversPosition2, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(m => m.CommitteePosition2, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-3">
+                                @Html.TextBoxFor(m => m.CommitteeName3, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-4">
+                                @Html.TextBoxFor(m => m.UniversPosition3, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(m => m.CommitteePosition3, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-1 col-md-3">
+                                @Html.TextBoxFor(m => m.CommitteeName4, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-4">
+                                @Html.TextBoxFor(m => m.UniversPosition4, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-3">
+                                @Html.TextBoxFor(m => m.CommitteePosition4, new { @class = "form-control", style = "max-width: none" })
+                            </div>
+                            <div class="col-md-1"></div>
+                        </div>
+                    </div>
+                    @*<a href="javascript:void(0)" onclick="savedefinitions()" class=" btn btn-primary btn-labeled"><span class="btn-label icon fa fa-save"></span>ذخیره</a>*@
+                    <span style="margin-top: 7px;" onclick="savedefinitions();" class="btn btn-primary btn-labeled">
+                        <span class="btn-label icon fa fa-save"></span>ذخیره
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section scripts
+{
+    @Scripts.Render("~/bundles/jqueryAjaxForm")
+    <script>
+
+        function savedefinitions() {
+            if ($('#DefinitionsForm').valid()) {
+                //$('#plnRequest').waiting();
+                $('#DefinitionsForm').ajaxSubmit({
+                    cashe: false,
+                    url: '@Url.Action("Edit", "Definitions", new {area = "UserArea"}, "http")',
+                    type: 'Post',
+                    dataType: 'json',
+                    data: $('#DefinitionsForm').serialize(),
+                    success: function (result) {
+                        if (!result.isError) {
+                            myalert(result.Msg, 'success');
+                        } else {
+                            myalert(result.Msg, 'danger');
+                        }
+
+                    },
+                    error: function (xhr, status) {
+                        alert(xhr.responseText());
+                    }
+                });
+            } else {
+                return $(this).form('validate');
+            }
+        }
+
+        $('input[type=file]').change(function (e) {
+            ValidateFileUpload(this, 600000, ['gif', 'jpeg', 'jpg', 'png', 'tif', 'pdf']);
+        });
+    </script>
+}

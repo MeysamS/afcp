@@ -1,0 +1,103 @@
+﻿@using Newtonsoft.Json
+@model Annual_faculty_promotions.WebUI.Areas.UserArea.Models.AddStageViewModel
+
+<table id="dgStage"></table>
+
+<div id="dlgAddStage" class="easyui-dialog" style="width: 600px; height: 200px; padding: 10px 20px"
+     closed="true" buttons="#dlgAddStage-buttons">
+    @*@{ Html.RenderPartial("_Create"); }*@
+    <div id="dlgAddStage-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconcls="icon-ok" onclick=" saveStage() " style="width: 90px">ذخیره</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconcls="icon-cancel" onclick=" javascript: $('#dlgAddStage').dialog('close'); " style="width: 90px">انصراف</a>
+    </div>
+</div>
+
+
+@section scripts{
+    <script src="~/Content/jquery-easyui-1.4.2/edatagrid.js"></script>
+    <script>
+
+        $('#dgStage').edatagrid(
+        {
+            //toolbar:
+            //[
+            //    {
+            //        text: 'جدید',
+            //        iconCls: 'icon-add',
+            //        handler: function() {
+            //            $('#dgStage').edatagrid('addRow');
+            //        }
+            //    }, '-',
+            //    {
+            //        text: 'حذف',
+            //        iconCls: 'icon-remove',
+            //        handler: function() {
+            //            $('#dgStage').edatagrid('destroyRow');
+            //        }
+            //    }, '-',
+            //    {
+            //        text: 'ذخیره',
+            //        iconCls: 'icon-save',
+            //        handler: function() {
+            //            $('#dgStage').edatagrid('saveRow');
+            //        }
+            //    }, '-',
+            //    {
+            //        text: 'انصراف',
+            //        iconCls: 'icon-undo',
+            //        handler: function() {
+            //            $('#dgStage').edatagrid('cancelRow');
+            //        }
+            //    }
+            //],
+            fit: true,
+            editing:false,
+            idField: 'Id',
+            title: 'لیست مراحل',
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: '480',
+            singleSelect: 'true',
+            fitColumns: 'true',
+            url: '@Url.Action("GetStages", "Stage")',
+            saveUrl: '@Url.Action("Create", "Stage")',
+            updateUrl: '@Url.Action("Edit", "Stage")',
+            destroyUrl: '@Url.Action("Delete", "Stage")',
+            onError: function (index, row) {
+                myalert(row.Msg, 'danger');
+                $(this).datagrid('cancelEdit', index);
+                $(this).edatagrid('reload');
+            },
+            onSuccess: function (index, row) {
+                myalert(row.Msg, 'success');
+            },
+            columns: [
+                [
+                    {
+                        field: 'Id',
+                        title: 'نقش',
+                        width: 300,
+                        editor: {
+                            type: 'combobox',
+                            options: {
+                                valueField: 'Id',
+                                textField: 'PersianName',
+                                method: 'get',
+                                url: '@Url.Action("GetRoleJason", "Stage")'
+                            }
+                        }
+                    },
+                    { field: 'Name', title: 'نام', width: 300, editor: { type: 'validatebox', width: 300, options: { required: true } } },
+                    {
+                        field: 'StageNumber',
+                        title: 'ترتیب الویت',
+                        width: 300,
+                        editor: { type: 'validatebox', width: 300, options: { required: true } }
+                    }
+                ]
+            ]
+        });
+
+      
+    </script>
+}

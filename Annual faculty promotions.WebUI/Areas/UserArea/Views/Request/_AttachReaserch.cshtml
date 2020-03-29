@@ -1,0 +1,68 @@
+﻿@model Annual_faculty_promotions.Core.Domain.EducationalResearch
+<link href="~/Content/plupload/jquery.plupload.queue/css/jquery.plupload.queue.css" rel="stylesheet" />
+<script src="~/Content/plupload/plupload.full.js"></script>
+<script src="~/Content/plupload/jquery.plupload.queue/jquery.plupload.queue.js"></script>
+<script src="~/Content/plupload/i18n/fa.js"></script>
+
+
+    <div class="well" style="margin-bottom: 0;border-radius:0 ">
+        <h5>@Model.Subject</h5>
+    </div>
+
+@using (Html.BeginForm("UploadAttachReasearch", "Request", FormMethod.Post,
+    new { enctype = "multipart/form-data" }))
+{
+    <div id="uploader">
+        <p>You browser doesn't have Flash, Silverlight, Gears, BrowserPlus or HTML5 support.</p>
+    </div>
+}
+
+<script>
+    $(function () {
+
+        $("#uploader").pluploadQueue({
+            // General settings
+            runtimes: 'html5,gears,flash,silverlight,browserplus,html4',
+            url: '@Url.Action("UploadAttachReasearch", "Request", new { reaserchId = Model.Id })',
+            max_file_size: '10mb',
+            chunk_size: '1mb',
+            unique_names: true,
+
+            // Resize images on clientside if we can
+            resize: { width: 500, height: 410, quality: 90 },
+
+            // Specify what files to browse for
+            filters: [
+                { title: "Image files", extensions: "jpg,gif,png,jpeg,bmp" },
+                //{ title: "Zip files", extensions: "zip" },
+                 { title: "Document files", extensions: "pdf" }
+            ],
+
+            // Flash settings
+            flash_swf_url: '/plupload/js/plupload.flash.swf',
+
+            // Silverlight settings
+            silverlight_xap_url: '/plupload/js/plupload.silverlight.xap'
+        });
+        // Client side form validation
+        //$('form').submit(function (e) {
+        //    var uploader = $('#uploader').pluploadQueue();
+
+        //    // Files in queue upload them first
+        //    if (uploader.files.length > 0) {
+        //        // When all files are uploaded submit form
+        //        uploader.bind('StateChanged', function () {
+        //            if (uploader.files.length === (uploader.total.uploaded + uploader.total.failed)) {
+        //                $('form')[0].submit();
+        //            }
+        //        });
+
+        //        uploader.start();
+        //    } else {
+        //        alert('You must queue at least one file.');
+        //    }
+
+        //    return false;
+        //});
+    });
+</script>

@@ -1,0 +1,67 @@
+﻿
+<div id="dlgConfirmed" class="easyui-dialog" modal="true" style="width: 700px; height: 295px;"
+     closed="true"></div>
+
+<div class="page-header" style="height: 600px;">
+    <div class="easyui-panel" title="لیست درخواست های بایگانی شده">
+
+        <table id="dgMyArchive"></table>
+    </div>
+</div>
+
+@section scripts{
+    @Scripts.Render("~/bundles/jqueryAjaxForm")
+
+    <script>
+        $('#dgMyArchive').datalist(
+    {
+        idField: 'Id',
+        loadMsg: 'شکیبا باشید...',
+        rownumbers: true,
+        height: 600,
+        singleSelect: 'true',
+        collapsible: true,
+        fitColumns: 'true',
+        url: '@Url.Action("GetArchives", "Cartable")',
+        rowStyler: function (index, row) {
+            //if ((index % 2) == 0) {
+            //return 'background-color:#f5f5f5;';
+            //return 'border: 2px black solid;';
+            //}
+        },
+        textFormatter: function (value, row, index) {
+            var result = '<div class="widget-comments panel-default tab-pane no-padding fade active in" id="dashboard-recent-                  comments">' +
+                '<div class="panel-padding no-padding-vr">' +
+                '<div class="comment">' +
+                    '<div class="comment-body">' +
+                    '<div class="comment-by"><div class="form-group"><div class="col-md-2">شماره درخواست :' + row.RequestId + '</div><div class="col-md-3">  تاریخ درخواست : ' + row.RequestDate +
+                    '</div><div class="col-md-3">  تاریخ بایگانی : ' + row.CreatedDate + '</div><div class="col-md-2"> مجموع امتیازات : ' + row.SumScore +
+                    '</div><div class="col-md-2"> پایه : ' + row.Grade + '</div></div></div>' +
+                    '<div class="comment-text">' + '<div class="form-group"><div class="col-md-2">' + (row.IsOpinionCommite ? '<span class="text-success">موافقت شده</span>' : '<span class="text-error">موافقت نشده</span>') +
+                    '</div><div class="col-md-10"> توضیحات : ' + row.Description +'</div></div></div>' +
+                    '<div class="comment-actions"><div class="form-group">';
+            if (parseInt(row.EducationScore) > 0)
+                result += '<div class="col-md-2"><i style="color:green" class="fa fa-circle"></i><span>امتیاز آموزشی : ' + row.EducationScore + '</span></div>';
+            if (parseInt(row.ResearchScore) > 0)
+                result += '<div class="col-md-2"><i style="color:green" class="fa fa-circle"></i><span>امتیاز پژوهشی : ' + row.ResearchScore + '</span></div>';
+            if (parseInt(row.ExecutiveScore) > 0)
+                result += '<div class="col-md-2"><i style="color:green" class="fa fa-circle"></i><span>امتیاز اجرایی : ' + row.ExecutiveScore + '</span></div>';
+            if (parseInt(row.TechnologyScore) > 0)
+                result += '<div class="col-md-2"><i style="color:green" class="fa fa-circle"></i><span>امتیاز فناوری : ' + row.TechnologyScore + '</span></div>';
+            if (parseInt(row.DissertationScore) > 0)
+                result += '<div class="col-md-2"><i style="color:green" class="fa fa-circle"></i><span>امتیاز راهنمایی پروژه : ' + row.DissertationScore + '</span></div>';
+            if (parseInt(row.OtherScore) > 0)
+                result += '<div class="col-md-2"><i style="color:green" class="fa fa-circle"></i><span>سایر امتیازات : ' + row.OtherScore + '</span></div>';
+            result +=
+               '</div></div></div></div> </div>';
+            return result;
+        },
+        onError: function (index, row) {
+            $.messager.show({title: 'پیام سیستم',msg: result.Msg,showType: 'show'});
+        },
+        onSuccess: function (index, row) {
+            $.messager.show({title: 'پیام سیستم',msg: result.Msg,showType: 'show'});
+        }
+    });
+    </script>
+}

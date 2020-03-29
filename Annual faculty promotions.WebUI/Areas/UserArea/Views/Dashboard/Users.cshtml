@@ -1,0 +1,37 @@
+﻿@model IEnumerable<Annual_faculty_promotions.Core.Domain.User.AppUser>
+@{
+    Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+}
+<ul class="breadcrumb breadcrumb-page">
+    <li><a href="javascript:void(0)">صفحه اصلی</a></li>
+    <li class="active"><a href="javascript:void(0)">کارتابل</a></li>
+</ul>
+<div class="row">
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-warning"> کاربری وجود ندارد</div>
+    }
+    else
+    {
+        foreach (var item in Model)
+        {
+            <div class="col-lg-5" style="margin-top: 10px">
+                <div class="media">
+                    <a class="pull-left" href="@Url.Action(MVC.UserArea.Dashboard.Name,MVC.UserArea.Dashboard.ActionNames.Profile,new{uid=item.Id})">
+                        <img class="media-object dp img-circle" src="@Url.Content("~/Content/Images/Avatars/"+item.Profile.Avatar)" style="width: 100px;height:100px;">
+                    </a>
+                    <div class="media-body">
+                        <h4 class="media-heading">
+                            @item.Profile.Name @item.Profile.Family
+                            <h5>@item.Profile.LastGradeEducation&nbsp;<small>@item.Profile.FieldofStudy</small></h5>
+                            <hr style="margin: 8px auto">
+                            <span class="label @(item.IsOnline ? "label-success" : "label-danger")">@(item.IsOnline ? "آنلاین" : "آفلاین")</span>
+                            <span class="label label-info">درخواست باز</span>
+                            <a style="cursor: pointer"><span class="label label-dark-gray">ارسال پیام</span></a>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

@@ -1,0 +1,65 @@
+﻿@using Annual_faculty_promotions.Core.Enums
+@using Annual_faculty_promotions.WebUI.Helpers
+@using Annual_faculty_promotions.WebUI.Helpers.Util
+@model IEnumerable<Annual_faculty_promotions.Core.Domain.Cartable>
+
+<div class="timeline">
+    @{
+        var modelData = Model.OrderBy(o=>o.CreatedDate).ToList();
+
+        for (int i = modelData.Count() - 1; i > 0; i--)
+        {
+            <div class="tl-entry">
+                <div class="tl-time">
+                    @RelativeTimeCalculator.Calculate(modelData[i].CreatedDate)
+                </div>
+                @if (modelData[i].CurrentCartable == CurrentCartable.عادی)
+                {
+                    <div class="tl-icon bg-success">
+                        <i class="fa fa-arrow-circle-right"></i>
+                    </div>
+                }
+                else if (modelData[i].CurrentCartable == CurrentCartable.برگشت)
+                {
+                    <div class="tl-icon bg-danger">
+                        <i class="fa fa-undo"></i>
+                    </div>
+                }
+                else if (modelData[i].CurrentCartable == CurrentCartable.تمام_شده)
+                {
+                    <div class="tl-icon bg-dark-gray">
+                        <i class="fa fa-archive"></i>
+                    </div>
+                }
+                <div class="bpanel tl-body" style="border: 1px solid #e4e4e4">
+                    @if (modelData[i].CurrentCartable == CurrentCartable.عادی)
+                    {
+                        <span class="text-semi text-success">تایید و ارسال</span>
+                    }
+                    @if (modelData[i].CurrentCartable == CurrentCartable.برگشت)
+                    {
+                        <span class="text-semi text-danger">برگشت خورده</span>
+                    }
+                    @if (modelData[i].CurrentCartable == CurrentCartable.تمام_شده)
+                    {
+                        <span class="text-semibold text-dark-gray"> بایگانی</span>
+                    }
+                    <span>
+                        توسط&nbsp;@modelData[i - 1].Stage.Role.PersianName
+                        @*<a href="javascript:void(0)">@item.UserRecive.Profile.Name @item.UserRecive.Profile.Family <img class="img-circle" style="width: 50px; height: 50px" src="@Url.Content("~/Content/Images/Avatars/" + @item.UserRecive.Profile.Avatar)" /></a>*@
+                        <a href="javascript:void(0)">@modelData[i].UserSender.Profile.Name @modelData[i].UserSender.Profile.Family <img class="img-circle" style="width: 50px; height: 50px" src="@Url.Content("~/Content/Images/Avatars/" + @modelData[i].UserSender.Profile.Avatar)" /></a>
+                    </span>
+                    <br />
+
+                    @modelData[i].Description
+                </div> <!-- / .tl-body -->
+            </div>
+            if (modelData[i].CreatedDate.ToPeString() != modelData[i - 1].CreatedDate.ToPeString())
+            {
+                <div class="tl-header now">@modelData[i].CreatedDate.ToPeString()</div>
+            }
+        }
+        <div class="tl-header now">@modelData[0].CreatedDate.ToPeString()</div>
+    }
+
+</div>

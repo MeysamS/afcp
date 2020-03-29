@@ -1,0 +1,198 @@
+﻿@using Annual_faculty_promotions.WebUI.Helpers
+@using Annual_faculty_promotions.WebUI.Models
+@model Annual_faculty_promotions.WebUI.Models.LoginViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    #signin-demo {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        z-index: 10000;
+        background: rgba(0,0,0,.6);
+        padding: 6px;
+        border-radius: 3px;
+    }
+
+        #signin-demo img {
+            cursor: pointer;
+            height: 40px;
+        }
+
+            #signin-demo img:hover {
+                opacity: .5;
+            }
+
+        #signin-demo div {
+            color: #fff;
+            font-size: 10px;
+            font-weight: 600;
+            padding-bottom: 6px;
+        }
+</style>
+
+<div class="theme-dust page-signin right-to-left">
+    <div id="page-signin-bg">
+        <!-- Background overlay -->
+        <div class="overlay"></div>
+        <!-- Replace this with your bg image -->
+        <img src="~/Content/assets/demo/signin-bg-1.jpg" alt="">
+    </div>
+    <!-- / Page background -->
+    <!-- Container -->
+    <div class="signin-container">
+
+        <!-- Left side -->
+        <div class="signin-info">
+            <a href="index.html" class="logo">
+                <span style="font-weight:100;">@User.UniversName() </span>
+            </a> <!-- / .logo -->
+            <div class="slogan" style="font-size: 12px">
+                سامانه ترفیع اعضای هیئت علمی
+            </div> <!-- / .slogan -->
+            <ul>
+                <li><i class="fa fa-sitemap signin-icon"></i> ثبت درخواست ترفیع سالانه</li>
+                <li><i class="fa fa-file-text-o signin-icon"></i> ارائه مستندات لازم جهت بررسی در کمیته ترفیع</li>
+                <li><i class="fa fa-outdent signin-icon"></i> امکان استفاده از سیستم به صورت اتوماسیون</li>
+            </ul> <!-- / Info list -->
+        </div>
+        <!-- / Left side -->
+        <!-- Right side -->
+        <div class="signin-form">
+
+            <!-- Form -->
+            @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", id = "signin-form_id", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="signin-text">
+                    <span>ورود به سامانه</span>
+                </div>
+                    <!-- / .signin-text -->
+
+                <div class="form-group w-icon">
+                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control input-lg", placeholder = "آدرس ایمیل" })
+                    <span class="fa fa-user signin-form-icon"></span>
+                </div>
+                    <!-- / Username -->
+
+                <div class="form-group w-icon">
+                    @Html.PasswordFor(m => m.Password, new { @class = "form-control input-lg", placeholder = "رمز عبور" })
+                    <span class="fa fa-lock signin-form-icon"></span>
+                </div>
+                    <!-- / Password -->
+                <div class="form-group">
+                    <div class="col-md-offset-3 col-md-9">
+                        <div class="checkbox">
+                            @Html.CheckBoxFor(m => m.RememberMe)
+                            @Html.LabelFor(m => m.RememberMe)
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Captcha, new { @class = "col-md-3 control-label" })
+                    <div class="col-md-offset-3 col-md-9">
+                        @*<input type="image" id="image" src="@Url.Action("Image", "Home")" alt="بارگذاری تصویر"/>*@
+
+                        <img id="image" class="captcha-image" src="@Url.Action("Image", "Home")" alt="بارگذاری تصویر" />&nbsp;
+                        <a href="#" style="text-decoration: none" class="refresh-captcha fa fa-refresh fa-2x"></a>
+
+                        <div style="margin-bottom: 25px" class="input-group">
+                            @Html.TextBoxFor(m => m.Captcha, new { @class = "form-control", style = "margin-top: 5px;", placeholder = "تصویر امنیتی" })
+                            @*@Html.TextBoxFor(m => m.Captcha, new {@class = "form-control"})*@
+                        </div>
+                    </div>
+                </div>
+                @*@Html.ValidationSummary("", new { @class = "text-danger" })*@
+                @Html.ValidationMessage("InvalidUser", new { @class = "text-danger" })
+                    <!-- / .form-actions -->
+                      <!-- / Form -->
+            <!-- "Sign In with" block -->
+                <div class="signin-with">
+                    <div class="form-actions">
+                        <input type="submit" value="ورود به سیستم" class="signin-btn bg-primary">
+                        <a href="#" class="forgot-password" id="forgot-password-link">رمز عبور خود را فراموش کردم</a>
+                    </div>
+                </div>
+            }
+
+
+            <!-- / "Sign In with" block -->
+            <!-- Password reset form -->
+            <div class="password-reset-form" id="password-reset-form">
+                <div class="header">
+                    <div class="signin-text">
+                        <span>بازیابی رمز عبور</span>
+                        <div class="close">&times;</div>
+                    </div> <!-- / .signin-text -->
+                </div> <!-- / .header -->
+                <!-- Form -->
+                @using (Html.BeginForm("ForgotPassword", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form", id = "password-reset-form_id" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary("", new { @class = "text-danger" })
+                    <div class="form-group w-icon">
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control input-lg", placeholder = "آدرس ایمیل" })
+                        <span class="fa fa-envelope signin-form-icon"></span>
+                    </div>
+                    <!-- / Email -->
+
+                    <div class="form-actions">
+                        <input type="submit" value="ارسال لینک پسورد به ایمیل شما" class="signin-btn bg-primary">
+                    </div> <!-- / .form-actions -->
+                }
+                <!-- / Form -->
+            </div>
+            <!-- / Password reset form -->
+        </div>
+        <!-- Right side -->
+    </div>
+    <!-- / Container -->
+
+    <div class="not-a-member">
+        هنوز ثبت نام نکرده اید؟<a href="@Url.Action("Register","Account")">عضویت در سامانه</a>
+    </div>
+</div>
+<!-- Page background -->
+@section scripts{
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="~/Scripts/myValidator.js"></script>
+    <script type="text/javascript">
+        // Resize BG
+        init.push(function () {
+            var $ph = $('#page-signin-bg'),
+                $img = $ph.find('> img');
+
+            $(window).on('resize', function () {
+                $img.attr('style', '');
+                if ($img.height() < $ph.height()) {
+                    $img.css({
+                        height: '100%',
+                        width: 'auto'
+                    });
+                }
+            });
+        });
+
+        // Show/Hide password reset form on click
+        init.push(function () {
+            $('#forgot-password-link').click(function () {
+                $('#password-reset-form').fadeIn(400);
+                return false;
+            });
+            $('#password-reset-form .close').click(function () {
+                $('#password-reset-form').fadeOut(400);
+                return false;
+            });
+        });
+
+        window.LanderApp.start(init);
+
+        $('a.refresh-captcha').on('click', function (e) {
+            e.preventDefault();
+            $('.captcha-image').attr('src', "@Url.Action("Image", "Home")" + "?t=" + new Date().getTime());
+        });
+    </script>
+}

@@ -1,0 +1,86 @@
+﻿<ul class="breadcrumb breadcrumb-page">
+    <li><a href="javascript:void(0)">صفحه اصلی</a></li>
+    <li class="active"><a href="javascript:void(0)">تعریف نقش</a></li>
+</ul>
+<table id="dgRole"></table>
+<div id="dlgAddRole" class="easyui-dialog" style="width: 500px; height: 140px; padding: 10px 20px"
+     closed="true" buttons="#dlgAddRole-buttons">
+    @Html.Partial("_Create")
+    <div id="dlgAddRole-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconcls="icon-ok" onclick=" saveRole() " style="width: 90px">ذخیره</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconcls="icon-cancel" onclick=" javascript: $('#dlgAddRole').dialog('close'); " style="width: 90px">انصراف</a>
+    </div>
+</div>
+@section scripts{
+
+
+<script src="~/Content/jquery-easyui-1.4.2/edatagrid.js"></script>
+    <script>
+        //$('#frmAddRole').ajaxForm();
+
+        $('#dgRole').edatagrid(
+       {
+           toolbar:
+           [
+               {
+                   text: 'جدید',
+                   iconCls: 'icon-add',
+                   handler: function () {
+                       $('#dgRole').edatagrid('addRow');
+                   }
+               }, '-',
+               {
+                   text: 'حذف',
+                   iconCls: 'icon-remove',
+                   handler: function () {
+                       $('#dgRole').edatagrid('destroyRow');
+                   }
+               }, '-',
+               {
+                   text: 'ذخیره',
+                   iconCls: 'icon-save',
+                   handler: function () {
+                       $('#dgRole').edatagrid('saveRow');
+                   }
+               }, '-',
+               {
+                   text: 'انصراف',
+                   iconCls: 'icon-undo',
+                   handler: function () {
+                       $('#dgRole').edatagrid('cancelRow');
+                   }
+               }
+           ],
+           fit: true,
+           idField: 'Id',
+           title: 'لیست نقش ها',
+           loadMsg: 'شکیبا باشید...',
+           rownumbers: true,
+           height: '480',
+           singleSelect: 'true',
+           fitColumns: 'true',
+           url: '@Url.Action("GetRoles", "RolesAdmin")',
+           saveUrl: '@Url.Action("Create", "RolesAdmin")',
+           updateUrl: '@Url.Action("Edit", "RolesAdmin")',
+           destroyUrl: '@Url.Action("Delete", "RolesAdmin")',
+           onSuccess: function(index, row) {
+               myalert(row.Msg, 'success');
+           },
+           onError:function(index, row) {
+               myalert(row.Msg, 'danger');
+               $(this).datagrid('cancelEdit', index);
+               $(this).edatagrid('reload');
+           },
+           columns: [
+               [
+                   { field: 'Id', width: 300,hidden:'hidden', editor: { type: 'validatebox',width: 300 } },
+
+                    { field: 'Name', title: 'نام لاتین', width: 300, editor: { type: 'validatebox', width: 300, options: { required: true } } },
+                    { field: 'PersianName', title: 'نام فارسی', width: 300, editor: { type: 'validatebox', width: 300, options: { required: true } } }  
+               ]
+           ]
+       });
+
+       
+    </script>
+}

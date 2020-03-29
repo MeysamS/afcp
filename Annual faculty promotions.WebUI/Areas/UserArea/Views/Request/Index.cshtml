@@ -1,0 +1,1261 @@
+﻿@using Annual_faculty_promotions.Core.Enums
+@model Annual_faculty_promotions.WebUI.Areas.UserArea.Models.AddRequestViewModel
+@{
+    Layout = "~/Areas/UserArea/Views/Shared/_Layout.cshtml";
+    var isSent = Model.IsSent;
+    var edTerm = new object();
+    var edResearchPost = new object();
+    var edGradeEducation = new object();
+    var edTechnologyType = new object();
+}
+<ul class="breadcrumb breadcrumb-page">
+    <li><a href="javascript:void(0)">صفحه اصلی</a></li>
+    <li class="active"><a href="javascript:void(0)">ثبت درخواست</a></li>
+</ul>
+<div class="page-header">
+    <div class="row">
+        <div class="col-xs-12 col-sm-8">
+            <div class="row">
+                <hr class="visible-xs no-grid-gutter-h">
+                <!-- "Create project" button, width=auto on desktops -->
+                @if ((Model.Request.Cartables == null) || (Model.Request.Cartables.Any()))  //(!Model.IsSent) &&
+                {
+                    <div class="pull-left col-xs-12 col-sm-auto">
+                        <a href="javascript:void(0)" id="aSend" onclick="$('#dlgConfirmed').dialog('open').dialog('setTitle', ''); $('#dlgConfirmed').dialog('center');" class="btn btn-danger btn-labeled" style="width: 100%;">
+                            <span class="btn-label icon fa fa-share-square-o"></span>ارسال
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if ((!Model.IsSent) && (Model.Request.Cartables != null))
+{
+    <div class="alert alert-danger">
+        <span>
+            درخواست شما از طرف
+        </span>
+        @{
+            <a href="javascript:void(0)">
+                @Model.Request.Cartables.LastOrDefault().UserSender.Profile.Name  @Model.Request.Cartables.LastOrDefault().UserSender.Profile.Family
+            </a>
+        }
+
+        <span>      برگشت خورده است! لطفا اصلاحات لازم را اعمال فرمایید!</span>
+    </div>
+            }
+<div id="dlgAttach" class="easyui-dialog" modal="true" style="width: 800px; height: 450px;"
+     closed="true">
+</div>
+
+<div id="dlgListAttach" class="easyui-dialog" modal="true" style="width: 800px; height: 450px;"
+     closed="true">
+</div>
+<div id="plnRequest">
+    @{ Html.RenderPartial("_CreateFurtherInformation", Model);}
+</div>
+
+
+<div class="bpanel">
+    <div class="note note-primary">فعالیت های آموزشی</div>
+
+    <div class="bpanel-body">
+        <table id="dgEducation"></table>
+    </div>
+    <div class="note note-primary">فعالیت های پژوهشی</div>
+    <div class="alert">
+        <strong>اخطار!</strong> در صورت عدم ارائه مستندات پژوهشی اعلام شده کمیته ترفیعات از بررسی آن امتناع خواهد کرد
+    </div>
+    <div class="bpanel-body">
+        <table id="dgReasearch"></table>
+    </div>
+    <div class="note note-primary">راهنمایی پروژه ، پایان نامه ، و رساله دانشجویی خاتمه یافته</div>
+    <div class="bpanel-body">
+        <table id="dgDissertation"></table>
+    </div>
+    <div class="note note-primary">
+        فعالیت های پژوهشی - فناوری
+    </div>
+    <div class="bpanel-body">
+        <table id="dgTechnology"></table>
+    </div>
+
+    <div class="note note-primary">
+        فعالیت های علمی - اجرایی
+    </div>
+
+    <div class="bpanel-body">
+        <table id="dgScientificExecutive"></table>
+    </div>
+</div>
+
+<div id="dlgConfirmed" class="easyui-dialog" modal="true" style="width: 700px; height: 295px;"
+     closed="true">
+
+    <div class="panel">
+        <div class="panel-heading">
+            <span class="panel-title">تائید و ارسال</span>
+        </div>
+        <div class="panel-body">
+            <div class="note note-warning">
+                کاربر گرامی در صورت نیاز میتوانید توضیحی را به درخواست افزوده و ارسال کنید
+            </div>
+            @Html.TextArea("CartableDescription", new { id = "CartableDescription", @class = "form-control expanding-input-target", style = "overflow: hidden; word-wrap: break-word; resize: horizontal; height: 87px;", rows = "3", placeholder = "توضیحات" })
+        </div>
+        <div style="margin-top: 3px" class="bpanel-footer text-right">
+            <button type="button" id="btnSendRequest" data-loading-text="Loading..." class="btn btn-primary" autocomplete="off">
+                ارسال
+            </button>
+            @*<span id="btnSendRequest" class="btn btn-primary">ارسال</span>*@
+        </div>
+
+    </div>
+</div>
+<!-- Colors -->
+@section scripts{
+
+    @Scripts.Render("~/bundles/jqueryAjaxForm")
+    <script src="~/Content/jquery-easyui-1.4.2/edatagrid.js"></script>
+    <script type="text/javascript" src="@Url.Content("~/signalr/hubs")"></script>
+
+    <script type="text/javascript">
+        var chub = $.connection.cartableHub;
+        $.connection.hub.logging = true;
+
+        $.connection.hub.start().done(function () {
+            $('#btnSendRequest').click(function () {
+                var requestId = $("#Request_Id").val();
+                var desc = $("#CartableDescription").val();
+                var $btn = $(this).button('loading');
+                $.ajax({
+                    cashe: false,
+                    url: '@Url.Action("SendRequest", "Cartable", "http")',
+                    type: 'Post',
+                    dataType: 'json',
+                    data: { requestId: requestId, desc: desc }, //$('#addRequestForm').serialize(),
+                    success: function (result) {
+                        if (result.isError) {
+                            myalert(result.Msg, 'danger');
+                            $btn.button('reset');
+                            return string.empty;
+                        } else {
+                            chub.server.addNewCartableNotification(result.uidRecive, result.uidSender).done(function () {
+                                myalert(result.Msg, 'success');
+                                $('#aSend').hide();
+                                $('#dlgConfirmed').dialog().close();
+                                $btn.button('reset');
+                            });
+                        }
+                    },
+                    error: function (xhr, status) {
+                        xhr.responseText();
+                        $btn.button('reset');
+                    }
+                });
+            });
+        }).fail(function () { });
+    </script>
+    <script>
+
+        var indexEditing = null;
+        $('#addRequestForm').ajaxForm();
+
+        function clearInputFiles() {
+            $('input[type=file]').each(function () {
+                $(this).val('');
+                $(this).attr('disabled', 'disabled');
+            });
+        }
+
+        //$(function() {
+        //    alert(1);
+        //    alert($('#LastDateGrade').val());
+        //    if ($('#LastDateGrade').val().trim() != "") {
+        //        $('#divLastDateGrade :input').attr("disabled", true);
+        //    }
+        //});
+
+        $(function () {
+            $('.switcher :input[type=checkbox]').each(function () {
+                $(this).switcher({
+                    theme: 'square',
+                    on_state_content: '<span class="fa fa-check"></span>',
+                    off_state_content: '<span class="fa fa-times"></span>'
+                });
+
+                $(this).on('change', function () {
+
+                    if ($(this).attr("id") == 'FurtherInformation_HasExecutivePosts') {
+                        if ($(this).is(':checked')) {
+                            $('#FurtherInformation_ExecutivePostName').removeAttr('disabled');
+                        } else {
+                            $('#FurtherInformation_ExectivePostName').attr('disabled', 'disabled');
+                        }
+
+                    } else if (($(this).attr("id") == 'FurtherInformation_OfficersStudyPhD')) {
+                        if ($(this).is(':checked')) {
+                            $('#OfficersStudyPhDUpload').removeAttr('disabled');
+                        } else {
+                            $('#OfficersStudyPhDUpload').attr('disabled', 'disabled');
+                        }
+                    } else if (($(this).attr("id") == 'FurtherInformation_TypeOfPartTimeWorkNoconnectionOtherUniversity')) {
+                        if ($(this).is(':checked')) {
+                            $('#TypeOfPartTimeWorkNoconnectionOtherUniversityUpload').removeAttr('disabled');
+                        } else {
+                            $('#TypeOfPartTimeWorkNoconnectionOtherUniversityUpload').attr('disabled', 'disabled');
+                        }
+                    } else if (($(this).attr("id") == 'FurtherInformation_TypeOfPartTimeButEmployeesOtherUniversity')) {
+                        if ($(this).is(':checked')) {
+                            $('#TypeOfPartTimeButEmployeesOtherUniversityUpload').removeAttr('disabled');
+                        } else {
+                            $('#TypeOfPartTimeButEmployeesOtherUniversityUpload').attr('disabled', 'disabled');
+                        }
+                    } else if (($(this).attr("id") == 'FurtherInformation_TypeOfFullTimeButRetired')) {
+                        if ($(this).is(':checked')) {
+                            $('#TypeOfFullTimeButRetiredUpload').removeAttr('disabled');
+                        } else {
+                            $('#TypeOfFullTimeButRetiredUpload').attr('disabled', 'disabled');
+                        }
+                    } else if (($(this).attr("id") == 'FurtherInformation_TypeOfFullTimeButNoRetired')) {
+                        if ($(this).is(':checked')) {
+                            $('#TypeOfFullTimeButNoRetiredUpload').removeAttr('disabled');
+                        } else {
+                            $('#TypeOfFullTimeButNoRetiredUpload').attr('disabled', 'disabled');
+                        }
+                    } else if (($(this).attr("id") == 'FurtherInformation_Fighter')) {
+                        if ($(this).is(':checked')) {
+                            $('#FurtherInformation_FighterType').removeAttr('disabled');
+                            $('#FighterTypeUpload').removeAttr('disabled');
+                        } else {
+                            $('#FurtherInformation_FighterType').attr('disabled', 'disabled');
+                            $('#FighterTypeUpload').attr('disabled', 'disabled');
+                        }
+                    } else if (($(this).attr("id") == 'FurtherInformation_FreedmanOrCaptive')) {
+                        if ($(this).is(':checked')) {
+                            $('#FurtherInformation_FreedmanOrCaptiveType').removeAttr('disabled');
+                            $('#FreedmanOrCaptiveTypeUpload').removeAttr('disabled');
+                        } else {
+                            $('#FurtherInformation_FreedmanOrCaptiveType').attr('disabled', 'disabled');
+                            $('#FreedmanOrCaptiveTypeUpload').attr('disabled', 'disabled');
+                        }
+                    } else if (($(this).attr("id") == 'FurtherInformation_IsVeteran')) {
+                        if ($(this).is(':checked')) {
+                            $('#FurtherInformation_VeteranType').removeAttr('disabled');
+                            $('#VeteranTypeUpload').removeAttr('disabled');
+                        } else {
+                            $('#FurtherInformation_VeteranType').attr('disabled', 'disabled');
+                            $('#VeteranTypeUpload').attr('disabled', 'disabled');
+                        }
+                    } else if (($(this).attr("id") == 'FurtherInformation_PassPhDPassa')) {
+                        if ($(this).is(':checked')) {
+                            $('#PassPhDPassaUpload').removeAttr('disabled');
+                        } else {
+                            $('#PassPhDPassaUpload').attr('disabled', 'disabled');
+                        }
+                    } else if (($(this).attr("id") == 'FurtherInformation_TakingSabbatical')) {
+                        if ($(this).is(':checked')) {
+                            $('#TakingSabbaticalUpload').removeAttr('disabled');
+                        } else {
+                            $('#TakingSabbaticalUpload').attr('disabled', 'disabled');
+                        }
+                    }
+                    //updateDisplay();
+                });
+            });
+        });
+
+        $('#dgEducation').edatagrid({
+            toolbar:
+            [
+                {
+                    text: 'جدید',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                        if ($("#Request_Id").val() == 0) {
+                            $.messager.alert('پیام سیستم', 'شما ابتدا می بایست درخواست را ذخیره نمایید!');
+                            return;
+                        }
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgEducation').edatagrid('addRow');
+                    }
+                }, '-',
+                {
+                    text: 'حذف',
+                    iconCls: 'icon-remove',
+                    handler: function () {
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgEducation').edatagrid('destroyRow');
+                    }
+                }, '-',
+                {
+                    text: 'ذخیره',
+                    iconCls: 'icon-save',
+                    handler: function () {
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgEducation').edatagrid('saveRow');
+                    }
+                }, '-',
+                {
+                    text: 'انصراف',
+                    iconCls: 'icon-undo',
+                    handler: function () {
+                        $('#dgEducation').edatagrid('cancelRow');
+                    }
+                }
+            ],
+            idField: 'Id',
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: 200,
+            singleSelect: true,
+
+            url: '@Url.Action("GetEducation", "Request")' + '?requestid=' + $('#Request_Id').val(),
+            saveUrl: '@Url.Action("CreateEducationReasearch", "Request")',
+            updateUrl: '@Url.Action("UpdateEducationReasearch", "Request")',
+            destroyUrl: '@Url.Action("DeleteEducationReasearch", "Request")',
+            onError: function (index, row) {
+                $.messager.alert('پیام', row.Msg);
+            },
+            columns: [
+                [
+                    {
+                        title: 'شماره درخواست',
+                        field: 'RequestId',
+                        hidden: 'hidden',
+                        value: 0,
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'EducationalResearchStatus',
+                        title: 'نوع',
+                        value: 1,
+                        hidden: 'hidden',
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'Term',
+                        hidden: 'hidden',
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'TermTitle',
+                        title: 'نیمسال',
+                        width: 120,
+                        editor: {
+                            type: 'combobox',
+                            options: {
+                                valueField: 'TermId',
+                                textField: 'Term',
+                                method: 'get',
+                                url: '@Url.Action("GetTerm", "Request")',
+                                onSelect: function (record) {
+                                    $(edTerm.target).textbox('setValue', record.TermId);
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'Subject',
+                        title: 'عنوان درس',
+                        width: 300,
+                        editor: { type: 'validatebox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'CourseNo',
+                        title: 'شماره درس',
+                        width: 100,
+                        editor: {
+                            type: 'numberspinner',
+                            width: 100,
+                            options: {
+                                required: true
+                            }
+                        }
+                    },
+                    {
+                        field: 'UnitCount',
+                        autoRowHeight: true,
+                        title: 'تعداد واحد',
+                        width: 100,
+                        editor: { type: 'numberspinner', width: 100, options: { required: true } }
+                    },
+                    {
+                        field: 'GradeEducation',
+                        hidden: 'hidden',
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'GradeEducationTitle',
+                        autoRowHeight: true,
+                        title: 'مقطع',
+                        width: 200,
+                        editor: {
+                            type: 'combobox',
+                            options: {
+                                valueField: 'GradeEducationId',
+                                textField: 'GradeEducation',
+                                method: 'get',
+                                url: '@Url.Action("GetGradeEducation", "Request")',
+                                onSelect: function (record) {
+                                    $(edGradeEducation.target).textbox('setValue', record.GradeEducationId);
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'StudentCount',
+                        autoRowHeight: true,
+                        title: 'تعداد دانشجو',
+                        width: 80,
+                        editor: { type: 'numberspinner', width: 100, options: { required: true } }
+                    }
+                ]
+            ],
+            onBeginEdit: function (index, row) {
+                edGradeEducation = $('#dgEducation').edatagrid('getEditor', { index: index, field: 'GradeEducation' });
+                edTerm = $('#dgEducation').edatagrid('getEditor', { index: index, field: 'Term' });
+                var ed = $('#dgEducation').edatagrid('getEditor', { index: index, field: 'EducationalResearchStatus' });
+                $(ed.target).textbox('setValue', 1);
+                var edreqId = $('#dgEducation').edatagrid('getEditor', { index: index, field: 'RequestId' });
+                $(edreqId.target).textbox('setValue', $('#Request_Id').val());
+            },
+            onSuccess: function (index, row) {
+                $('#dgEducation').datagrid('refreshRow',index);
+            }
+        });
+
+
+        $('#dgReasearch').edatagrid({
+            toolbar:
+            [
+                {
+                    text: 'جدید',
+                    datatoggle: 'bbt',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                        if ($("#Request_Id").val() == 0) {
+                            $.messager.alert('پیام سیستم', 'شما ابتدا می بایست درخواست را ذخیره نمایید!');
+                            return;
+                        }
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgReasearch').edatagrid('addRow');
+                    }
+                }, '-',
+                {
+                    text: 'حذف',
+                    iconCls: 'icon-remove',
+                    handler: function () {
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgReasearch').edatagrid('destroyRow');
+                    }
+                }, '-',
+                {
+                    text: 'ذخیره',
+                    iconCls: 'icon-save',
+                    handler: function () {
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        if (!CheckDate($($('#dgReasearch').edatagrid('getEditor', { index: $("#dgReasearch").datagrid("getRowIndex", $("#dgReasearch").datagrid("getSelected")), field: 'BeginDate' }).target).textbox('getValue'))) {
+                            $.messager.alert('پیام سیستم', 'تاریخ شروع اشتباه می باشد!');
+                            return;
+                        }
+                        if (!CheckDate($($('#dgReasearch').edatagrid('getEditor', { index: $("#dgReasearch").datagrid("getRowIndex", $("#dgReasearch").datagrid("getSelected")), field: 'EndDate' }).target).textbox('getValue'))) {
+                            $.messager.alert('پیام سیستم', 'تاریخ خاتمه اشتباه می باشد!');
+                            return;
+                        }
+                        $('#dgReasearch').edatagrid('saveRow');
+                    }
+                }, '-',
+                {
+                    text: 'انصراف',
+                    iconCls: 'icon-undo',
+                    handler: function () {
+                        $('#dgReasearch').edatagrid('cancelRow');
+                    }
+                }, '-',
+                {
+                    text: 'پیوست',
+                    iconCls: 'pic_attach1',
+                    handler: function () {
+                        showAddAttachForm();
+                        $('#dlgAttach').dialog('center');
+                    }
+                }
+            ],
+            idField: 'Id',
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: 200,
+            singleSelect: true,
+
+            url: '@Url.Action("GetResearch", "Request")' + '?requestid=' + $('#Request_Id').val(),
+            saveUrl: '@Url.Action("CreateEducationReasearch", "Request")' + '?requestid=' + $('#Request_Id').val(),
+            updateUrl: '@Url.Action("UpdateEducationReasearch", "Request")',
+            destroyUrl: '@Url.Action("DeleteEducationReasearch", "Request")',
+            onError: function (index, row) {
+                $.messager.alert('پیام', row.Msg);
+            },
+            columns: [
+                [
+                    {
+                        field: 'Id',
+                        hidden: 'hidden',
+                        editor: { type: 'textbox', width: 50 }
+                    },
+                    {
+                        title: 'شماره درخواست',
+                        field: 'RequestId',
+                        hidden: 'hidden',
+                        value: 0,
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'EducationalResearchStatus',
+                        title: 'نوع',
+                        value: 1,
+                        hidden: 'hidden',
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'Term',
+                        title: 'نیمسال',
+                        hidden: 'hidden',
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'TermTitle',
+                        title: 'نیمسال',
+                        width: 120,
+                        editor: {
+                            type: 'combobox',
+                            options: {
+                                valueField: 'TermId',
+                                textField: 'Term',
+                                method: 'get',
+                                url: '@Url.Action("GetTerm", "Request")',
+                                onSelect: function (record) {
+                                    $(edTerm.target).textbox('setValue', record.TermId);
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'Subject',
+                        title: 'عنوان طرح پژوهشی',
+                        width: 300,
+                        editor: { type: 'validatebox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'ResearchPost',
+                        title: 'سمت در طرح',
+                        hidden: 'hidden',
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'ResearchPostTitle',
+                        autoRowHeight: true,
+                        title: 'سمت در طرح',
+                        width: 100,
+                        editor: {
+                            type: 'combobox',
+                            options: {
+                                valueField: 'PostPlanId',
+                                textField: 'PostPlan',
+                                method: 'get',
+                                url: '@Url.Action("GetPostPlan", "Request")',
+                                onSelect: function (record) {
+                                    $(edResearchPost.target).textbox('setValue', record.PostPlanId);
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'BeginDate',
+                        autoRowHeight: true,
+                        title: 'تاریخ شروع',
+                        width: 100,
+                        //formatter: formatDate,
+                        editor: {
+                            type: 'textbox',
+                            width: 100,
+                            options: {
+                                required: true,
+                                prompt: '----/--/--'
+                            }
+                        }
+                    },
+                    {
+                        field: 'EndDate',
+                        autoRowHeight: true,
+                        title: 'تاریخ خاتمه',
+                        width: 100,
+                        editor: { type: 'textbox', width: 100, options: { required: true, prompt: '----/--/--' } }
+                    },
+                    {
+                        field: 'StudentCount',
+                        autoRowHeight: true,
+                        title: 'تعداد دانشجو',
+                        width: 100,
+                        editor: { type: 'numberspinner', width: 100, options: { required: true } }
+                    },
+                    {
+                        field: 'Attach',
+                        title: 'نمایش پیوست ها',
+                        width: 100,
+                        formatter: function (value, rows, index) {
+                            return '<a researchId=' + rows.Id + ' href="javascript:void(0)" ' +
+                                ' onclick="showListAttachForm(this)"><span class="fa fa-paperclip fa-2x"></span></a>&nbsp&nbsp&nbsp';
+                        }
+                    }
+                ]
+            ],
+            onBeginEdit: function (index, row) {
+                edTerm = $('#dgReasearch').edatagrid('getEditor', { index: index, field: 'Term' });
+                edResearchPost = $('#dgReasearch').edatagrid('getEditor', { index: index, field: 'ResearchPost' });
+                var ed = $('#dgReasearch').edatagrid('getEditor', { index: index, field: 'EducationalResearchStatus' });
+                $(ed.target).textbox('setValue', 2);
+                var edreqId = $('#dgReasearch').edatagrid('getEditor', { index: index, field: 'RequestId' });
+                $(edreqId.target).textbox('setValue', $('#Request_Id').val());
+            },
+            onSuccess: function (index, row) {
+                //$('#dgReasearch').datagrid('reload');
+            }
+        });
+
+
+        $('#dgScientificExecutive').edatagrid({
+            toolbar:
+            [
+                {
+                    text: 'جدید',
+                    datatoggle: 'bbt',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                        if ($("#Request_Id").val() == 0) {
+                            $.messager.alert('پیام سیستم', 'شما ابتدا می بایست درخواست را ذخیره نمایید!');
+                            return;
+                        }
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgScientificExecutive').edatagrid('addRow');
+                    }
+                }, '-',
+                {
+                    text: 'حذف',
+                    iconCls: 'icon-remove',
+                    handler: function () {
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgScientificExecutive').edatagrid('destroyRow');
+                    }
+                }, '-',
+                {
+                    text: 'ذخیره',
+                    iconCls: 'icon-save',
+                    handler: function () {
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgScientificExecutive').edatagrid('saveRow');
+                    }
+                }, '-',
+                {
+                    text: 'انصراف',
+                    iconCls: 'icon-undo',
+                    handler: function () {
+                        $('#dgScientificExecutive').edatagrid('cancelRow');
+                    }
+                }
+            ],
+            idField: 'Id',
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: 200,
+            singleSelect: true,
+
+            url: '@Url.Action("GetScientificExecutive", "Request")' + '?requestid=' + $('#Request_Id').val(),
+            saveUrl: '@Url.Action("CreateScientificExecutive", "Request")' + '?requestid=' + $('#Request_Id').val(),
+            updateUrl: '@Url.Action("UpdateScientificExecutive", "Request")',
+            destroyUrl: '@Url.Action("DeleteScientificExecutive", "Request")',
+            onError: function (index, row) {
+                $.messager.alert('پیام', row.Msg);
+            },
+            columns: [
+                [
+                    {
+                        title: 'شماره درخواست',
+                        field: 'RequestId',
+                        hidden: 'hidden',
+                        value: 0,
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'Subject',
+                        title: 'عنوان',
+                        width: 450,
+                        editor: { type: 'validatebox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'StartDate',
+                        autoRowHeight: true,
+                        title: 'تاریخ شروع',
+                        width: 100,
+                        //formatter: formatDate,
+                        editor: {
+                            type: 'textbox',
+                            width: 100,
+                            options: {
+                                required: true,
+                                prompt: '----/--/--'
+                            }
+                        }
+                    },
+                    {
+                        field: 'EndDate',
+                        autoRowHeight: true,
+                        title: 'تاریخ خاتمه',
+                        width: 100,
+                        editor: { type: 'textbox', width: 100, options: { prompt: '----/--/--' } }
+                    },
+                    {
+                        field: 'TimeofMounth',
+                        autoRowHeight: true,
+                        title: 'ساعت حضور در ماه',
+                        width: 110,
+                        editor: {
+                            type: 'numberspinner',
+                            width: 100,
+                            options: {
+                                required: true
+                            }
+                        }
+                    }
+                ]
+            ],
+            onBeginEdit: function (index, row) {
+                var edreqId = $('#dgScientificExecutive').edatagrid('getEditor', { index: index, field: 'RequestId' });
+                $(edreqId.target).textbox('setValue', $('#Request_Id').val());
+            },
+            onSuccess: function (index, row) {
+               // $('#dgScientificExecutive').datagrid('reload');
+            }
+        });
+
+
+        $('#dgDissertation').edatagrid({
+            toolbar:
+            [
+                {
+                    text: 'جدید',
+                    datatoggle: 'bbt',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                        if ($("#Request_Id").val() == 0) {
+                            $.messager.alert('پیام سیستم', 'شما ابتدا می بایست درخواست را ذخیره نمایید!');
+                            return;
+                        }
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgDissertation').edatagrid('addRow');
+                    }
+                }, '-',
+                {
+                    text: 'حذف',
+                    iconCls: 'icon-remove',
+                    handler: function () {
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgDissertation').edatagrid('destroyRow');
+                    }
+                }, '-',
+                {
+                    text: 'ذخیره',
+                    iconCls: 'icon-save',
+                    handler: function () {
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        if (!CheckDate($($('#dgDissertation').edatagrid('getEditor', { index: $("#dgDissertation").datagrid("getRowIndex", $("#dgDissertation").datagrid("getSelected")), field: 'BeginDate' }).target).textbox('getValue'))) {
+                            $.messager.alert('پیام سیستم', 'تاریخ شروع اشتباه می باشد!');
+                            return;
+                        }
+                        if (!CheckDate($($('#dgDissertation').edatagrid('getEditor', { index: $("#dgDissertation").datagrid("getRowIndex", $("#dgDissertation").datagrid("getSelected")), field: 'VindicationDate' }).target).textbox('getValue'))) {
+                            $.messager.alert('پیام سیستم', 'تاریخ دفاع اشتباه می باشد!');
+                            return;
+                        }
+                        $('#dgDissertation').edatagrid('saveRow');
+                    }
+                }, '-',
+                {
+                    text: 'انصراف',
+                    iconCls: 'icon-undo',
+                    handler: function () {
+                        $('#dgDissertation').edatagrid('cancelRow');
+                    }
+                }
+            ],
+            idField: 'Id',
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: 200,
+            singleSelect: true,
+
+            url: '@Url.Action("GetDissertation", "Request")' + '?requestid=' + $('#Request_Id').val(),
+            saveUrl: '@Url.Action("CreateDissertation", "Request")' + '?requestid=' + $('#Request_Id').val(),
+            updateUrl: '@Url.Action("UpdateDissertation", "Request")',
+            destroyUrl: '@Url.Action("DeleteDissertation", "Request")',
+            onError: function (index, row) {
+                $.messager.alert('پیام', row.Msg);
+            },
+            columns: [
+                [
+                    {
+                        title: 'شماره درخواست',
+                        field: 'RequestId',
+                        hidden: 'hidden',
+                        value: 0,
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'Subject',
+                        title: 'عنوان پروژه،پایان نامه،و رساله',
+                        width: 350,
+                        editor: { type: 'textbox', width: 300, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'StudentName',
+                        autoRowHeight: true,
+                        title: 'نام دانشجو',
+                        width: 180,
+                        editor: {
+                            type: 'textbox',
+                            width: 100,
+                            options: {
+                                required: true
+                            }
+                        }
+                    },
+                    {
+                        field: 'GradeEducation',
+                        hidden: 'hidden',
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'GradeEducationTitle',
+                        title: 'مقطع',
+                        width: 150,
+                        editor: {
+                            type: 'combobox',
+                            options: {
+                                required: true,
+                                valueField: 'GradeEducationId',
+                                textField: 'GradeEducation',
+                                method: 'get',
+                                url: '@Url.Action("GetGradeEducation", "Request")',
+                                onSelect: function (record) {
+                                    $(edGradeEducation.target).textbox('setValue', record.GradeEducationId);
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'BeginDate',
+                        autoRowHeight: true,
+                        title: 'تاریخ شروع',
+                        width: 100,
+                        editor: {
+                            type: 'textbox',
+                            width: 100,
+                            options: {
+                                required: true,
+                                prompt: '----/--/--'
+                            }
+                        }
+                    },
+                    {
+                        field: 'VindicationDate',
+                        autoRowHeight: true,
+                        title: 'تاریخ دفاع',
+                        width: 100,
+                        editor: {
+                            type: 'textbox',
+                            width: 100,
+                            options: {
+                                required: true,
+                                prompt: '----/--/--'
+                            }
+                        }
+                    },
+                    {
+                        field: 'UnitCount',
+                        autoRowHeight: true,
+                        title: 'تعداد واحد',
+                        width: 60,
+                        editor: {
+                            type: 'numberspinner',
+                            width: 100,
+                            options: {
+                                required: true
+                            }
+                        }
+                    }
+                ]
+            ],
+            onBeginEdit: function (index, row) {
+                edGradeEducation = $('#dgDissertation').edatagrid('getEditor',
+                { index: index, field: 'GradeEducation' });
+                var edreqId = $('#dgDissertation').edatagrid('getEditor', { index: index, field: 'RequestId' });
+                $(edreqId.target).textbox('setValue', $('#Request_Id').val());
+            },
+            onSuccess: function (index, row) {
+                //$('#dgDissertation').datagrid('reload');
+            }
+        });
+
+
+        $('#dgTechnology').edatagrid({
+            toolbar:
+            [
+                {
+                    text: 'جدید',
+                    datatoggle: 'bbt',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                        if ($("#Request_Id").val() == 0) {
+                            $.messager.alert('پیام سیستم', 'شما ابتدا می بایست درخواست را ذخیره نمایید!');
+                            return;
+                        }
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgTechnology').edatagrid('addRow');
+                    }
+                }, '-',
+                {
+                    text: 'حذف',
+                    iconCls: 'icon-remove',
+                    handler: function () {
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        $('#dgTechnology').edatagrid('destroyRow');
+                    }
+                }, '-',
+                {
+                    text: 'ذخیره',
+                    iconCls: 'icon-save',
+                    handler: function () {
+                        if ('@Model.IsSent' == 'True') {
+                            $.messager.alert('پیام سیستم', 'در خواست شما در حال بررسی می باشد ، لذا قابل ویرایش نمی باشد!');
+                            return;
+                        }
+                        if (!CheckDate($($('#dgTechnology').edatagrid('getEditor', { index: $("#dgTechnology").datagrid("getRowIndex", $("#dgTechnology").datagrid("getSelected")), field: 'PresentationDate' }).target).textbox('getValue'))) {
+                            $.messager.alert('پیام سیستم', 'تاریخ انتشار اشتباه می باشد!');
+                            return;
+                        }
+                        $('#dgTechnology').edatagrid('saveRow');
+                    }
+                }, '-',
+                {
+                    text: 'انصراف',
+                    iconCls: 'icon-undo',
+                    handler: function () {
+                        $('#dgTechnology').edatagrid('cancelRow');
+                    }
+                }
+            ],
+            idField: 'Id',
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: 200,
+            singleSelect: true,
+
+            url: '@Url.Action("GetTechnologies", "Request")' + '?requestid=' + $('#Request_Id').val(),
+            saveUrl: '@Url.Action("CreateTechnology", "Request")' + '?requestid=' + $('#Request_Id').val(),
+            updateUrl: '@Url.Action("UpdateTechnology", "Request")',
+            destroyUrl: '@Url.Action("DeleteTechnology", "Request")',
+            onError: function (index, row) {
+                $.messager.alert('پیام', row.Msg);
+            },
+            columns: [
+                [
+                    {
+                        title: 'شماره درخواست',
+                        field: 'RequestId',
+                        hidden: 'hidden',
+                        value: 0,
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'TechnologyType',
+                        hidden: 'hidden',
+                        width: 80,
+                        editor: { type: 'textbox', width: 200, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'TechnologyTypeTitle',
+                        title: 'نوع فعالیت',
+                        width: 200,
+                        editor: {
+                            type: 'combobox',
+                            options: {
+                                required: true,
+                                valueField: 'TechnologyTypeId',
+                                textField: 'TechnologyType',
+                                method: 'get',
+                                url: '@Url.Action("GetTechnologyType", "Request")',
+                                onSelect: function (record) {
+                                    $(edTechnologyType.target).textbox('setValue', record.TechnologyTypeId);
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'Subject',
+                        title: 'عنوان',
+                        width: 350,
+                        editor: { type: 'textbox', width: 300, autoRowHeight: true, options: { required: true } }
+                    },
+                    {
+                        field: 'PresentationDate',
+                        autoRowHeight: true,
+                        title: 'تاریخ انتشار/ارائه',
+                        width: 100,
+                        editor: {
+                            type: 'textbox',
+                            width: 100,
+                            options: {
+                                required: true,
+                                prompt: '----/--/--'
+                            }
+                        }
+                    },
+                    {
+                        field: 'PlacePresentation',
+                        autoRowHeight: true,
+                        title: 'محل انتشار/ارائه',
+                        width: 130,
+                        editor: {
+                            type: 'textbox',
+                            width: 100
+                        }
+                    },
+                    {
+                        field: 'PartnersNames',
+                        autoRowHeight: true,
+                        title: 'اسامی همکاران',
+                        width: 200,
+                        editor: {
+                            type: 'textbox',
+                            width: 100
+                        }
+                    }
+                ]
+            ],
+            onBeginEdit: function (index, row) {
+                edTechnologyType = $('#dgTechnology').edatagrid('getEditor',{ index: index, field: 'TechnologyType' });
+                var edreqId = $('#dgTechnology').edatagrid('getEditor', { index: index, field: 'RequestId' });
+                $(edreqId.target).textbox('setValue', $('#Request_Id').val());
+            },
+            onSuccess: function (index, row) {
+                //$('#dgTechnology').datagrid('reload');
+            }
+        });
+
+        function showAddAttachForm() {
+            var dgselected = $('#dgReasearch').edatagrid('getSelected');
+            if (dgselected == null) {
+                $.messager.alert('Warning', 'رکوردی انتخاب نشده است!');
+                return;
+            }
+            if (Number(dgselected.Id) <= 0) {
+                $.messager.alert('Warning', 'لطفا فرم را بازیابی کنید!');
+                return;
+            }
+            $.ajax({
+                url: '@Url.Action(MVC.UserArea.Request.UploadAttachReasearch())',
+                dataType: 'html',
+                data: { reaserchId: dgselected.Id },
+                type: 'get',
+                success: function (result) {
+                    $('#dlgAttach').html(result);
+
+                    $('#dlgAttach').dialog('open').dialog('setTitle', 'افزودن پیوست ها');
+                },
+                error: function () {
+                    $.messager.alert('خطا', 'خطا!');
+                }
+            });
+        }
+
+        function saverequest() {
+            if ($('#addRequestForm').valid()) {
+                $('#plnRequest').waiting();
+                $('#addRequestForm').ajaxSubmit({
+                    cashe: false,
+                    url: '@Url.Action("Create", "Request", new {area = "UserArea"}, "http")',
+                    type: 'Post',
+                    dataType: 'json',
+                    data: $('#addRequestForm').serialize(),
+                    success: function (result) {
+                        if (result.isError) {
+                            //$('#plnRequest').html(result.Msg);
+                            //$('#plnFurtherInformation').unwait();
+                            $('#plnRequest').waiting('done');
+                            myalert('خطا درثبت درخواست.', 'danger');
+                        } else {
+                            clearInputFiles();
+                            $('#plnRequest').html(result.Msg);
+                            //$('#plnFurtherInformation').unwait();
+                            $('#plnRequest').waiting('done');
+                            myalert('ثبت درخواست با موفقیت انجام شد.', 'success');
+                        }
+                    },
+                    error: function (xhr, status) {
+                        $('#plnRequest').waiting('done');
+                        $.messager.alert('پیام سیستم', xhr.responseText());
+                    }
+                });
+            } else {
+                return $(this).form('validate');
+            }
+        }
+
+        function showListAttachForm(element) {
+            $.ajax({
+                url: '@Url.Action(MVC.UserArea.Request.ListReaserchAttachForm())',
+                dataType: 'html',
+                data: { researchId: $(element).attr('researchId') },
+                type: 'get',
+                success: function (result) {
+                    $('#dlgListAttach').html(result);
+                    $('#dlgListAttach').dialog('open').dialog('setTitle', 'لیست پیوست ها');
+                    $('#dlgListAttach').dialog('center');
+                },
+                error: function () {
+
+                }
+            });
+        }
+
+        function sendrequest() {
+            var requestId = $("#Request_Id").val();
+            if (parseInt(requestId) == 0) {
+                myalert("درخواست ابتدا باید ذخیره شود!", 'danger');
+            }
+            var desc = $("#CartableDescription").val();
+            $.ajax({
+                cashe: false,
+                url: '@Url.Action("SendRequest", "Cartable", "http")',
+                type: 'Post',
+                dataType: 'json',
+                data: { requestId: requestId, desc: desc }, //$('#addRequestForm').serialize(),
+                success: function (result) {
+                    if (result.isError) {
+                        myalert(result.Msg, 'danger');
+                        return;
+                    } else {
+                        myalert(result.Msg, 'success');
+                        $('#divsaverequest').hide();
+                        $('#dlgConfirmed').dialog().close();
+                        $('a.l-btn').linkbutton({ disabled: false });
+                    }
+                },
+                error: function (xhr, status) {
+                    xhr.responseText();
+                }
+            });
+        }
+
+        function changeUrl() {
+            $('#dgEducation').edatagrid({
+                saveUrl: '@Url.Action("CreateEducationReasearch", "Request")' + '?requestid=' + $('#Request_Id').val(),
+                destroyUrl: '@Url.Action("DeleteEducationReasearch", "Request")' + '?requestid=' + $('#Request_Id').val()
+            });
+
+            $('#dgReasearch').edatagrid({
+                saveUrl: '@Url.Action("CreateEducationReasearch", "Request")' + '?requestid=' + $('#Request_Id').val(),
+                destroyUrl: '@Url.Action("DeleteEducationReasearch", "Request")' + '?requestid=' + $('#Request_Id').val()
+            });
+            $('#dgScientificExecutive').edatagrid({
+                saveUrl: '@Url.Action("CreateScientificExecutive", "Request")' + '?requestid=' + $('#Request_Id').val(),
+                destroyUrl: '@Url.Action("DeleteScientificExecutive", "Request")' + '?requestid=' + $('#Request_Id').val()
+            });
+            $('#dgDissertation').edatagrid({
+                saveUrl: '@Url.Action("CreateDissertation", "Request")' + '?requestid=' + $('#Request_Id').val(),
+                destroyUrl: '@Url.Action("DeleteDissertation", "Request")' + '?requestid=' + $('#Request_Id').val()
+            });
+            $('#dgTechnology').edatagrid({
+                saveUrl: '@Url.Action("CreateTechnology", "Request")' + '?requestid=' + $('#Request_Id').val(),
+                destroyUrl: '@Url.Action("DeleteTechnology", "Request")' + '?requestid=' + $('#Request_Id').val()
+            });
+        }
+
+        $('input[type=file]').change(function (e) {
+            ValidateFileUpload(this, 3600000, ['gif', 'jpeg', 'jpg', 'png', 'tif', 'pdf']);
+        });
+
+        function CheckDate(strDate) {
+            var arrDate = strDate.split("/");
+            if (arrDate.length != 3)
+                return false;
+            if (parseInt(arrDate[0]) > 1500 || parseInt(arrDate[0]) < 1300)
+                return false;
+            if (parseInt(arrDate[1]) > 12 || parseInt(arrDate[1]) < 1)
+                return false;
+            if (parseInt(arrDate[2]) < 1)
+                return false;
+            if ((parseInt(arrDate[1]) > 6) && (parseInt(arrDate[2]) > 31))
+                return false;
+            if ((parseInt(arrDate[1]) < 7) && (parseInt(arrDate[2]) > 30))
+                return false;
+            return true;
+        }
+    </script>
+}
+
+
+

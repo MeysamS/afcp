@@ -1,0 +1,14 @@
+﻿@using System.Web.Mvc.Html
+@model Annual_faculty_promotions.WebUI.Areas.UserArea.Models.ProfileViewModel
+
+<div class="row">
+    <div class="form-group">
+        <div class="col-md-9">
+            @Html.DropDownList("Recievers", (SelectList)ViewBag.Recievers, "انتخاب کنید...", new { @class = "form-control input-sm", style = "width: 250px" })
+        </div>
+        <div class="col-md-3">
+            <button type="button" class="btn btn-primary" onclick="SendMessage(this);">ارسال پیام</button>
+        </div>
+    </div>
+</div>
+

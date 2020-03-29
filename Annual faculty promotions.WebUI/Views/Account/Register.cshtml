@@ -1,0 +1,169 @@
+﻿@using Annual_faculty_promotions.WebUI.Helpers
+@model Annual_faculty_promotions.WebUI.Models.RegisterViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    #signup-demo {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        z-index: 10000;
+        background: rgba(0,0,0,.6);
+        padding: 6px;
+        border-radius: 3px;
+    }
+
+        #signup-demo img {
+            cursor: pointer;
+            height: 40px;
+        }
+
+            #signup-demo img:hover {
+                opacity: .5;
+            }
+
+        #signup-demo div {
+            color: #fff;
+            font-size: 10px;
+            font-weight: 600;
+            padding-bottom: 6px;
+        }
+</style>
+
+<div class="theme-dust page-signup right-to-left">
+    <div id="page-signup-bg">
+        <!-- Background overlay -->
+        <div class="overlay"></div>
+        <!-- Replace this with your bg image -->
+        <img src="~/Content/assets/demo/signin-bg-1.jpg" alt="">
+    </div>
+    <!-- / Page background -->
+    <!-- Container -->
+    <div class="signup-container">
+        <!-- Header -->
+        <div class="signup-header">
+            <a href="index.html" class="logo">
+                <span style="font-weight:100;">@User.UniversName()</span>
+            </a> <!-- / .logo -->
+            <div class="slogan">
+                سامانه ترفیع اعضای هیئت علمی
+            </div> <!-- / .slogan -->
+        </div>
+        <!-- / Header -->
+        <!-- Form -->
+        <div class="signup-form">
+            @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "form-horizontal",id="signup-form_id", role = "form" }))
+            {
+               @Html.AntiForgeryToken()
+                <div class="signup-text">
+                    <span>ایجاد حساب کاربری</span>
+                </div>
+
+                <div class="form-group w-icon">
+                    @Html.TextBoxFor(m => m.CodeMeli, new { @class = "form-control input-lg",placeholder="کد ملی" })
+                    <span class="fa fa-info signup-form-icon"></span>
+                </div>
+                <div class="form-group w-icon">
+                    @Html.TextBoxFor(m => m.CodeEstekhdam, new { @class = "form-control input-lg", placeholder = "کد پرسنلی" })
+                    <span class="fa fa-info signup-form-icon"></span>
+                </div>
+                <div class="form-group w-icon">
+                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control input-lg", placeholder = "آدرس ایمیل" })
+                    <span class="fa fa-envelope signup-form-icon"></span>
+                </div>
+
+                <div class="form-group w-icon">
+                    @Html.PasswordFor(m => m.Password, new { @class = "form-control input-lg", placeholder = "رمزعبور" })
+                    <span class="fa fa-lock signup-form-icon"></span>
+                </div>
+                <div class="form-group w-icon">
+                    @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control input-lg", placeholder = "تکرار رمزعبور" })
+                    <span class="fa fa-lock signup-form-icon"></span>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Captcha, new { @class = "col-md-3 control-label" })
+                    <div class="col-md-9">
+                        @*<input type="image" id="image" src="@Url.Action("Image", "Home")" alt="بارگذاری تصویر" />*@
+                        <img id="image" class="captcha-image" src="@Url.Action("Image", "Home")" alt="بارگذاری تصویر" />&nbsp;
+                        <a href="#" style="text-decoration: none" class="refresh-captcha fa fa-refresh fa-2x"></a>
+
+                        <div style="margin-bottom: 25px" class="input-group">
+                            @Html.TextBoxFor(m => m.Captcha, new { @class = "form-control", style = "margin-top: 5px;", placeholder = "تصویر امنیتی" })
+                            @*@Html.TextBoxFor(m => m.Captcha, new { @class = "form-control" })*@
+                        </div>
+                    </div>
+                </div>
+            
+                @Html.ValidationMessage("", new { @class = "text-danger" })
+            <!-- / Form -->
+            <!-- "Sign In with" block -->
+                <div class="signup-with">
+                    <div class="form-actions">
+                        <input type="submit" value="ثبت نام" class="signup-btn bg-primary">
+                    </div>
+                </div>
+            }
+        </div>
+        <!-- Right side -->
+    </div>
+
+    <div class="have-account">
+        قبلا ثبت نام کردید؟ <a href="@Url.Action("Login")">ورود به سامانه</a>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+<script src="~/Scripts/myValidator.js"></script>
+    <script>
+        init.push(function () {
+            var $ph = $('#page-signup-bg'),
+                $img = $ph.find('> img');
+
+            $(window).on('resize', function () {
+                $img.attr('style', '');
+                if ($img.height() < $ph.height()) {
+                    $img.css({
+                        height: '100%',
+                        width: 'auto'
+                    });
+                }
+            });
+        });
+
+        window.LanderApp.start(init);
+
+        function RefreshCaptcha() {
+            $.ajax({
+                cashe: false,
+                url: '@Url.Action("Image", "Home")',
+                type: 'get',
+                //dataType: 'json',
+                //data: { requestId: requestId, desc: desc }, 
+                success: function (result) {
+                    if (result.isError) {
+                        myalert(result.Msg, 'danger');
+                        return;
+                    } else {
+                        $.messager.alert('پیام سیستم', result);
+                        $("#image").attr("src", "/Captcha/CaptchaImage?" + result);
+                        //document.getElementById("image").src = result.data;
+                        //$('#image').src(result.data);
+                    }
+                },
+                error: function (xhr, status) {
+                    xhr.responseText();
+                }
+            });
+        }
+
+        $('a.refresh-captcha').on('click', function (e) {
+            e.preventDefault();
+            $('.captcha-image').attr('src', "@Url.Action("Image", "Home")" + "?t=" + new Date().getTime());
+        });
+    </script>
+}

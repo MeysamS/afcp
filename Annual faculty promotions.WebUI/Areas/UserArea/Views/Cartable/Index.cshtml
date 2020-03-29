@@ -1,0 +1,363 @@
+﻿@*<div id="dlgReport" class="easyui-dialog" modal="true" style="width: 70%; min-height: 650px;"
+         closed="true">
+    </div>*@
+<style>
+
+    .datagrid-cell {
+        border-bottom: 1px solid;
+    }
+     tr:hover {
+    background-color:#ffe48d;
+     color: #fff;
+        cursor: default;
+}
+
+    .datagrid-row-even {
+        background-color: lavender;  
+  
+    }
+    
+     .datagrid-row-odd{
+        background-color: #ffffff;
+
+    } 
+
+      .datagrid-row-return {
+        background-color: mistyrose;       
+    }
+  .datagrid-row-end {
+        background-color:aquamarine;       
+    }
+    .datagrid-row-selected {
+        background: #ffe48d;
+        color: #000000;
+    }
+</style>
+<div id="EducationDialog" class="easyui-dialog" modal="true" style="width: 850px; height: 450px;"
+     closed="true">
+</div>
+
+<ul class="breadcrumb breadcrumb-page">
+    <li><a href="javascript:void(0)">صفحه اصلی</a></li>
+    <li class="active"><a href="javascript:void(0)">کارتابل</a></li>
+</ul>
+<div class="page-header">
+    <div class="row">
+        <div class="pull-left col-xs-12 col-sm-auto">
+            <a href="@Url.Action("Index","Request")" class="btn btn-info btn-labeled" style="width: 100%;"><span class="btn-label icon fa fa-plus"></span>ایجاد درخواست</a>
+        </div>
+        <div class="pull-left col-xs-12 col-sm-auto">
+            @*@if (!User.IsInRole("Admin"))
+                {*@
+            <a href="javascript:void(0)" data-op="send" onclick="showConfirmed(this);" class="btn btn-success btn-labeled">
+                <span class="btn-label icon fa fa-check-square-o"></span>تائید و ارسال
+            </a>
+            @*}*@
+            @if (User.IsInRole("MG") || User.IsInRole("RD") || User.IsInRole("MA") || User.IsInRole("RK"))
+            {
+                <a onclick="showConfirmed(this);" data-op="back" href="javascript:void(0)" class="btn btn-danger btn-labeled"><span class="btn-label icon fa fa-undo"></span>برگشت</a>
+            }
+            @if (User.IsInRole("RK"))
+            {
+                <a href="javascript:void(0)" onclick="archive()" class="btn btn-info btn-labeled"><span class="btn-label icon fa fa-archive"></span>بایگانی</a>
+            }
+            @if (User.IsInRole("RK"))
+            {
+                <a href="javascript:void(0)" onclick="showReport()" class="btn btn-warning btn-labeled"><span class="btn-label icon fa fa-archive"></span>چاپ</a>
+            }
+        </div>
+
+        <div class="col-xs-12 col-sm-4">
+            <div class="row">
+                <hr class="visible-xs no-grid-gutter-h">
+
+                <!-- Margin -->
+                <div class="visible-xs clearfix form-group-margin"></div>
+                <!-- Search field -->
+                <form action="#" class="pull-right col-xs-12 col-sm-12">
+                    <div class="input-group no-margin">
+                        <span class="input-group-addon" style="border: none; background: #fff; background: rgba(0, 0, 0, .05);"><i class="fa fa-search"></i></span>
+                        <input placeholder="کاوش..." class="form-control no-padding-hr" style="border: none; background: #fff; background: rgba(0, 0, 0, .05);" type="text">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<table id="dgCartable"></table>
+
+<div id="dlgConfirmed" class="easyui-dialog" modal="true" style="width: 700px; height: 295px;"
+     closed="true">
+
+    <div class="panel">
+        <div class="panel-heading">
+            <span class="panel-title">تائید و ارسال</span>
+        </div>
+        <div class="panel-body">
+            <div class="note note-warning">
+                کاربر گرامی در صورت نیاز میتوانید توضیحی را به درخواست افزوده و ارسال کنید
+            </div>
+            @Html.TextArea("CartableDescription", new { id = "CartableDescription", @class = "form-control expanding-input-target", style = "overflow: hidden; word-wrap: break-word; resize: horizontal; height: 87px;", rows = "3", placeholder = "توضیحات" })
+        </div>
+        <div style="margin-top: 3px" class="bpanel-footer text-right">
+            <span id="btnSendCartable" class="btn btn-primary">ارسال</span>
+        </div>
+
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/Content/jquery-easyui-1.4.2/edatagrid.js"></script>
+    <script src="~/signalr/hubs"></script>
+    @Scripts.Render("~/bundles/jqueryAjaxForm")
+
+    <script type="text/javascript">
+        var chub = $.connection.cartableHub;
+        $.connection.hub.logging = true;
+
+        chub.client.sendNewCartable = function () {
+            $('#dgCartable').datalist('reload');
+
+        };
+
+        $.connection.hub.start().done(function () {
+            $('#btnSendCartable').click(function () {
+                var opcode = $('#btnSendCartable').attr('data-op');
+                var rowSelected = $('#dgCartable').datalist('getSelected');
+                var desc = $("#CartableDescription").val();
+                if (rowSelected == null) {
+                    $.messager.alert('Warning', 'رکوردی انتخاب نشده است!');
+                    return;
+                }
+                if (opcode == 'send') {
+                    if (rowSelected.StageId == rowSelected.EndStage) {
+                        $.messager.show({
+                            title: 'پیام سیستم',
+                            msg: "درخواست مورد نظر باید بایگانی شود!",
+                            showType: 'show'
+                        });
+                        return;
+                    }
+                    var msgReturn = "";
+                    if (rowSelected.CurrentCartable == 2) {
+                        msg = "درخواست مورد نظر نیاز به اصلاحات داشته است،آیا از تایید و ارسال اطمینان دارید؟";
+                    } else {
+                        msg = 'ارسال شود؟';
+                    }
+                    $.messager.confirm('confirm', msg, function (r) {
+                        if (r) {
+                            $.post('@Url.Action("Send", "Cartable", new {area = "UserArea"}, "http")',
+                            { cartableId: rowSelected.Id, desc: desc }, function (result) {
+                                if (!result.isError) {
+                                    chub.server.addNewCartableNotification(result.uidRecive, result.uidSender).done(function () {
+                                        $('#dlgConfirmed').dialog().close();
+                                        myalert(result.Msg, "success");
+                                    });
+
+                                } else {
+                                    myalert(result.Msg, "danger");
+                                }
+                            }, 'json');
+                        }
+                    });
+                } else if (opcode == 'back') {
+                    if (rowSelected.CurrentCartable == 2) {
+                        $.messager.show({
+                            title: 'پیام سیستم',
+                            msg: "درخواست مورد نظر برگشتی می باشد، لطفا آن را از طریق فرم درخواست اصلاح و ارسال نمایید!",
+                            showType: 'show'
+                        });
+                        return;
+                    }
+                    $.messager.confirm('confirm', 'برگشت داده شود؟', function (r) {
+                        if (r) {
+                            $.post('@Url.Action("Return", "Cartable", new {area = "UserArea"}, "http")', { cartableId: rowSelected.Id, desc: desc }, function (result) {
+                                if (!result.isError) {
+                                    chub.server.addNewCartableNotification(result.uidRecive, result.uidSender).done(function () {
+                                        $('#dlgConfirmed').dialog().close();
+                                        myalert(result.Msg, "success");
+                                        $btn.button('reset');
+                                    });
+                                } else {
+                                    myalert(result.Msg, "danger");
+                                }
+                            }, 'json');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+    <script>
+        $('#dgCartable').datalist(
+        {
+            title:'لیست درخواست های جدید',
+            idField: 'Id',
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: 600,
+            singleSelect: 'true',
+            collapsible: true,
+            fitColumns: 'true',
+            url: '@Url.Action("GetCartables", "Cartable")',
+            textFormatter: function (value, row, index) {
+                var result = '<div class="widget-comments panel-default tab-pane no-padding fade active in" id="dashboard-recent-comments">' +
+                    '<div class="col-md-11">' +
+                    '<div class="panel-padding no-padding-vr">' +
+                    '<div class="comment">' +
+                    '<img src="@Url.Content("~/Content/Images/Avatars/")' + row.UserAvatar + '" alt="" class="comment-avatar">' +
+                    '<div class="comment-body">' +
+                    '<div class="comment-by">ارسال کننده : ' + row.NameFamily + ' | درخواست کننده :' + row.OwnerRequest + ' | شماره درخواست :' + row.RequestId + ' | تاریخ درخواست :' + row.CreateDate + ' | مرحله : ' + row.StageName +
+                    '<span class="" style="padding-right:80px">' + row.RelativeTimeCreateDate + '</span>'  +
+                    '</div>' + (row.CurrentCartable===2?'<img style="position: absolute;height: 50px;left: 10px;" src="@Url.Content("~/Content/Images/App/return.png")" alt="" >"':"")+
+
+                    '<div class="comment-text">' + row.Description + '</div>' +
+                    '<div class="comment-actions">';
+                if (row.FurtherInformations != "")
+                    result += '<a  href="@Url.Action("FurtherInformation", "Cartable")?requestId=' + row.RequestId + '"><i style="color:green" class="fa fa-circle"></i>اطلاعات تکمیلی</a>';
+                if (row.Educational != "")
+                    if (row.Educational != "")
+                        result += '<a href="@Url.Action("Educational", "Cartable")?requestId=' + row.RequestId + '&RoleName=' + row.RoleName + '"><i  style="color:green" class="fa fa-circle"></i>فعالیت های آموزشی</a>';
+                if (row.Researches != "")
+                    result += '<a href="@Url.Action("Research", "Cartable")?requestId=' + row.RequestId + '&RoleName=' + row.RoleName + '"><i style="color:green" class="fa fa-circle"></i>فعالیت های پژوهشی</a>';
+
+                if (row.ScientificExecutives != "")
+                    result += '<a href="@Url.Action("ScientificExecutive", "Cartable")?requestId=' + row.RequestId + '&RoleName=' + row.RoleName + '"><i style="color:green" class="fa fa-circle"></i>فعالیت های علمی-اجرایی</a>';
+                if (row.Technologies != "")
+                    result += '<a href="@Url.Action("Technology", "Cartable")?requestId=' + row.RequestId + '&RoleName=' + row.RoleName + '"><i style="color:green" class="fa fa-circle"></i>فعالیت های پژوهشی-فناوری</a>';
+                if (row.Dissertations != "")
+                    result += '<a href="@Url.Action("Dissertation", "Cartable")?requestId=' + row.RequestId + '&RoleName=' + row.RoleName + '"><i style="color:green" class="fa fa-circle"></i>راهنمایی پروژه،پایان نامه،و ...</a>';
+
+                result += '</div></div></div></div></div>';
+                if (row.CurrentCartable == 2)
+                    result += '<a href="' + '@Url.Action("Index","Request")' + '" class="fa fa-edit fa-3x pull-right" data-toggle="tooltip" data-placement="top" title="" data-original-title="ویرایش درخواست"></a>';
+                return result + '</div>';
+            },
+            rowStyler: function (index, row) {
+                var mystyle;
+                if (index % 2 == 0)
+                mystyle= {class: 'datagrid-row-odd'};
+            else mystyle= {class:'datagrid-row-even'}
+
+                if (row.CurrentCartable == 2) {
+                    mystyle= { class: 'datagrid-row-return' };
+                } else if (row.StageId == row.EndStage) {
+                    mystyle= { class: 'datagrid-row-end' };
+                }
+                return mystyle;
+            },
+            onError: function (index, row) {
+            },
+            onSuccess: function (index, row) {
+                $.messager.show({
+                    title: 'پیام سیستم',
+                    msg: result.Msg,
+                    showType: 'show'
+                });
+            }
+        });
+
+        function showConfirmed(element) {
+            var rowSelected = $('#dgCartable').datalist('getSelected');
+            if (rowSelected == null) {
+                $.messager.alert('پیام', 'رکوردی انتخاب نشده است!');
+                return;
+            }
+            $('#dlgConfirmed').dialog('open').dialog('setTitle', '');
+            $('#CartableDescription').val('');
+            $('#dlgConfirmed').dialog('center');
+            var op = $(element).attr('data-op');
+            $('#btnSendCartable').attr('data-op', op);
+        }
+
+
+        function archive() {
+            var selected = $('#dgCartable').datalist('getSelected');
+            if (selected == null) {
+                $.messager.show({
+                    title: 'پیام سیستم',
+                    msg: "رکوردی انتخاب نشده است!",
+                    showType: 'show'
+                });
+                return;
+            }
+            if (selected.CurrentCartable == 2) {
+                $.messager.show({
+                    title: 'پیام سیستم',
+                    msg: "درخواست مورد نظر برگشتی می باشد، لطفا آن را اصلاح بفرمایید!",
+                    showType: 'show'
+                });
+                return;
+            }
+            if (selected.StageId != selected.EndStage) {
+                $.messager.show({
+                    title: 'پیام سیستم',
+                    msg: "درخواست مورد نظر باید تایید و ارسال شود!",
+                    showType: 'show'
+                });
+                return;
+            }
+            var url = '@Url.Action("Archive", "Cartable", new {cartableId = "REPLACEME"})';
+            window.location.href = url.replace('REPLACEME', selected.Id);
+        }
+
+        function showReport() {
+            var selected = $('#dgCartable').datalist('getSelected');
+            if (selected == null) {
+                $.messager.show({
+                    title: 'پیام سیستم',
+                    msg: "رکوردی انتخاب نشده است!",
+                    showType: 'show'
+                });
+                return;
+            }
+            var url = '@Url.Action("Index", "Report", new {cartableId = "REPLACEME"})';
+            window.location.href = '@Url.Action("Index", "Report")?cartableId=' + selected.Id;
+
+        }
+
+        function ArchiveCartable() {
+            var rowSelected = $('#dgCartable').datagrid('getSelected');
+            if (rowSelected == null) {
+                $.messager.alert('Warning', 'رکوردی انتخاب نشده است!');
+                return;
+            }
+
+            $.messager.confirm('confirm', 'ارسال شود؟', function (r) {
+                if (r) {
+                    $.post('@Url.Action("Archive", "Cartable", new {area = "UserArea"}, "http")', { cartableId: rowSelected.Id }, function (result) {
+                        if (result.success) {
+                            $('#dgCartable').datagrid('reload');
+                        } else {
+                            $.messager.show({
+                                title: 'پیام سیستم',
+                                msg: result.Msg,
+                                showType: 'show'
+                            });
+                        }
+                    }, 'json');
+                }
+            });
+        }
+
+
+        function EducationalDialog(element) {
+            $.ajax({
+                url: '@Url.Action("GetEducation", "Request", new {area = "UserArea"})',
+                dataType: 'html',
+                data: { requestid: $(element).attr('reqid') },
+                type: 'get',
+                success: function (result) {
+                    $('#EducationDialog').html(result);
+                    $('#EducationDialog').dialog('open').dialog('setTitle', 'فعالیت های آموزشی');
+                    $('#EducationDialog').dialog('center');
+                },
+                error: function () {
+
+                }
+            });
+        }
+    </script>
+}

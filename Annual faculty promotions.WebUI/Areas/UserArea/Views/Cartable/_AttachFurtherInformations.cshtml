@@ -1,0 +1,37 @@
+﻿@using Microsoft.AspNet.Identity
+@model IEnumerable<Annual_faculty_promotions.Core.Domain.AttachmentFurtherInformation>
+
+@{
+    var imgFileTipe = "";
+    foreach (var item in Model)
+    {
+        if (Path.GetExtension(item.ImageName).ToLower() == ".jpeg" || Path.GetExtension(item.ImageName).ToLower() == ".jpg" || Path.GetExtension(item.ImageName).ToLower() == ".png" || Path.GetExtension(item.ImageName).ToLower() == ".gif")
+        {
+            imgFileTipe = "fa fa-file-image-o";            
+        }
+        else if (Path.GetExtension(item.ImageName).ToLower() == ".doc" || Path.GetExtension(item.ImageName).ToLower() == ".docx")
+        {
+            imgFileTipe = "fa fa-file-word-o";
+        }
+        else if (Path.GetExtension(item.ImageName).ToLower() == ".xls" || Path.GetExtension(item.ImageName).ToLower() == ".xlsx")
+        {
+            imgFileTipe = "fa fa-file-excel-o";
+        }
+        else if (Path.GetExtension(item.ImageName).ToLower() == ".pdf")
+        {
+            imgFileTipe = "fa fa-file-pdf-o";
+        }
+        else if (Path.GetExtension(item.ImageName).ToLower() == ".zip" || Path.GetExtension(item.ImageName).ToLower() == "rar")
+        {
+            imgFileTipe = "fa fa-file-archive-o";
+        }
+        <div style="margin: 0; text-align: center" class="message unread">
+            <div class="col-xs-12 col-md-6">
+                <a target="_blank" href="@Url.Content("~/Content/FurtherInformation/"+@item.FurtherInformation.Request.User.Email+"/"+@item.ImageName)">دانلود</a>
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <span class="@imgFileTipe fa-2x"></span>
+            </div>
+        </div>
+    }
+}

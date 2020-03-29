@@ -1,0 +1,29 @@
+﻿@model Annual_faculty_promotions.Core.Domain.Department
+
+@using (Html.BeginForm("Create", "Department", FormMethod.Post, new { id = "frmAddDepartment", @class = "form-horizontal" }))
+{
+    <div class="form-group form-group-sm">
+        @Html.LabelFor(model => model.College.Name, new { @class = "col-sm-3 control-label" })
+        <div class="col-sm-4">
+            <div id="collegecomboBox">
+            </div>
+        </div>
+        <div class="col-sm-5">
+            @Html.TextBoxFor(model => model.CollegeId, new { hidden = "hidden" })
+            @Html.ValidationMessageFor(m => m.CollegeId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group form-group-sm">
+        @Html.LabelFor(model => model.Name, new { @class = "col-sm-3 control-label" })
+        <div class="col-sm-9">
+         
+            @Html.TextBoxFor(model => model.Name, new { @class = "form-control input-sm" })
+            @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+        </div>
+    </div>
+}
+
+
+
+
+

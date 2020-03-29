@@ -1,0 +1,160 @@
+﻿@model Annual_faculty_promotions.Core.Domain.Request
+
+
+<ul class="breadcrumb breadcrumb-page">
+    <li><a href="javascript:void(0)">صفحه اصلی</a></li>
+    <li><a href="javascript:void(0)">کارتابل</a></li>
+    <li class="active"><a href="javascript:void(0)">فعالیت های آموزشی</a></li>
+</ul>
+<div class="page-header">
+    <div class="row">
+        <div class="pull-left col-xs-8">
+
+            <span><img class="img-circle img-thumbnail" style="width: 50px;height: 50px" src="@Url.Content("~/Content/Images/Avatars/"+Model.User.Profile.Avatar)" alt="" /> </span>&nbsp;&nbsp;&nbsp;
+            شماره درخواست: <strong id="current-rating-example">@Model.Id</strong>&nbsp;&nbsp;&nbsp;
+            نام و نام خانوادگی درخواست کننده : <strong id="your-rating-example">@Model.User.Profile.Name &nbsp; @Model.User.Profile.Family</strong><br><br>
+
+        </div>
+
+        <div class="pull-right col-xs-12 col-sm-auto">
+            <a href="@Url.Action("Index", "Cartable")" class="btn btn-warning btn-labeled" style="width: 100%;"><span class="btn-label icon fa fa-undo"></span>برگشت به کارتابل</a>
+        </div>
+    </div>
+</div>
+
+<div class="page-header" style="height: 600px">
+    <div class="row">
+        <table id="dgCEducation"></table>
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/Content/jquery-easyui-1.4.2/edatagrid.js"></script>
+    <script>
+        var row = null;
+        var index = null;
+        $('#dgCEducation').edatagrid({
+            toolbar:
+            [
+                {
+                    text: 'ویرایش',
+                    iconCls: 'icon-edit',
+                    handler: function () {
+                        row = $('#dgCEducation').edatagrid('getSelected');
+                        if (row == null) {
+                            $.messager.alert("warning", "سطری انتخاب نشده است!");
+                            return;
+                        }
+                        index = $('#dgCEducation').edatagrid('getRowIndex', row);
+                        $('#dgCEducation').edatagrid('editRow', index);
+                    }
+                },
+                {
+                    text: 'ذخیره',
+                    iconCls: 'icon-save',
+                    handler: function () {
+                        $('#dgCEducation').edatagrid('saveRow');
+                    }
+                }, '-',
+                {
+                    text: 'انصراف',
+                    iconCls: 'icon-undo',
+                    handler: function () {
+                        $('#dgCEducation').edatagrid('cancelRow', index);
+                    }
+                }
+            ],
+            title: 'فعالیت های آموزشی',
+            idField: 'id',
+            loadMsg: 'شکیبا باشید...',
+            rownumbers: true,
+            height: 600,
+            singleSelect: 'true',
+            queryParams: { requestid: '@Model.Id' },
+            url: '@Url.Action("GetEducation", "Cartable")',
+            updateUrl: '@Url.Action("UpdateEducationReasearch", "Cartable")' + '?requestid=@Model.Id',
+            onError: function (index, row) {
+                $.messager.alert('پیام', row.Msg);
+            },
+            columns: [
+                [
+                    {
+                        field: 'EducationalResearchStatus',
+                        title: 'نوع',
+                        value: 1,
+                        hidden: "hidden",
+                        width: 80
+                    },
+                    {
+                        field: 'Term',
+                        title: 'نیمسال',
+                        hidden: "hidden",
+                        width: 80
+                    },
+                    {
+                        field: 'TermName',
+                        title: 'نیمسال',
+                        width: 80
+                    },
+                    {
+                        field: 'Subject',
+                        title: 'عنوان درس',
+                        width: 280
+                    },
+                    {
+                        field: 'CourseNo',
+                        title: 'ش درس',
+                        width: 70
+                    },
+                    {
+                        field: 'UnitCount',
+                        autoRowHeight: true,
+                        title: 'ت واحد',
+                        width: 70
+                    },
+                    {
+                        field: 'GradeEducation',
+                        hidden: "hidden"
+                    },
+                    {
+                        field: 'GradeEducationTitle',
+                        autoRowHeight: true,
+                        title: 'مقطع',
+                        width: 180
+                    },
+                    {
+                        field: 'StudentCount',
+                        autoRowHeight: true,
+                        title: 'ت دانشجو',
+                        width: 80
+                    },
+                    {
+                        field: 'EvaluationFormCount',
+                        autoRowHeight: true,
+                        title: 'ت فرم ارزشیابی',
+                        width: 100,
+                        hidden: "@(((ViewBag.roleName == "RK") || (ViewBag.roleName == "MA")) ? "" : "hidden")",
+                        editor: { type: 'textbox', width: 100, options: { required: true } }
+                    },
+                    {
+                        field: 'QualityTeaching',
+                        autoRowHeight: true,
+                        title: 'کیفیت تدریس',
+                        width: 100,
+                        hidden: "@(((ViewBag.roleName == "RK") || (ViewBag.roleName == "MA")) ? "" : "hidden")",
+                        editor: { type: 'textbox', width: 100, options: { required: true, precision: 2 } }
+                    },
+                    {
+                        field: 'UnitEqual',
+                        autoRowHeight: true,
+                        title: 'واحد معادل',
+                        width: 80,
+                        hidden: "@(((ViewBag.roleName == "RK") || (ViewBag.roleName == "MA")) ? "" : "hidden")",
+                        editor: { type: 'textbox', width: 100, options: { required: true, precision: 2 } }
+                    }
+                ]
+            ]
+        });
+
+    </script>
+}

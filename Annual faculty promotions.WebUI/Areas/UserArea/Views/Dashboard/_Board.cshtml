@@ -1,0 +1,91 @@
+﻿<div class="row">
+    <div class="form-group">
+        <div class="col-md-1">
+            @if ((Model.User != null) && (Model.User.Profile != null) && (!string.IsNullOrWhiteSpace(Model.User.Profile.Avatar)))
+            {
+                <img class="img-circle" src="~/Content/assets/demo/avatars/@Model.User.Profile.Avatar" alt="" style="width: 50px; height: 50px"/>
+            }
+            else
+            {
+                <img class="img-circle" src="~/Content/assets/demo/avatars/1.jpg" alt="" style="width: 50px; height: 50px"/>
+            }
+        </div>
+        <div class="col-md-11">
+            @Html.TextAreaFor(m => m.Messaging.Text, new {@class = "form-group form-control expanding-input-target", style = "overflow: hidden; word-wrap: break-word; resize: horizontal; height: 87px;", rows = "3", placeholder = "نوشتن پیام"})
+            <div class="form-group">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary">ارسال پیام</button>
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><i class="fa fa-caret-down"></i></button>
+                    <ul class="dropdown-menu">
+                        <li><a href="javascript:void(0)" onclick="SendMessage('MG');">مدیر گروه</a></li>
+                        <li><a href="javascript:void(0)" onclick="SendMessage('RD');">رئیس دانشکده</a></li>
+                        <li><a href="javascript:void(0)" onclick="SendMessage('RK');">رئیس کارگزینی</a></li>
+                        <li><a href="javascript:void(0)" onclick="SendMessage('MA');">معاون آموزشی</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr class="no-panel-padding-h panel-wide"/>
+    @foreach (var item in Model.Messagings)
+    {
+        <div class="form-group">
+            <div class="col-md-1">
+                @if ((item.UserSender != null) && (item.UserSender.Profile != null) && (!string.IsNullOrWhiteSpace(item.UserSender.Profile.Avatar)))
+                {
+                    <img class="img-circle" src="~/Content/assets/demo/avatars/@item.UserSender.Profile.Avatar" alt="" style="width: 50px; height: 50px"/>
+                }
+                else
+                {
+                    <img class="img-circle" src="~/Content/assets/demo/avatars/1.jpg" alt="" style="width: 50px; height: 50px"/>
+                }
+            </div>
+            <div class="col-md-11">
+                <div class="form-group" style="border: 1px solid #d0dce2">
+                    <div class="col-md-5">
+                        <span style="float: right">فرستنده : </span>
+                        <a href="javascript:void(0)" style="float: right">@item.UserSender.Profile.Name @item.UserSender.Profile.Family</a>
+                    </div>
+                    <div class="col-md-5">
+                        <span style="float: right">گیرنده : </span>
+                        <a href="javascript:void(0)" style="float: right">@item.UserReciever.Profile.Name @item.UserReciever.Profile.Family</a>
+                    </div>
+                    <div class="col-md-2">
+                        <span style="color: #acacac; float: right">@item.UpdatedDate</span>
+                    </div>
+                    <div class="col-md-12">
+                        <p style="clear: both">@item.Text</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+
+ function SendMessage(reciever) {
+        var text = $("#Messaging_Text").val();
+        $.ajax({
+            cashe: false,
+            url: '@Url.Action("SendMEssage", "Profile", new {area = "UserArea"}, "http")',
+            type: 'Post',
+            dataType: 'json',
+            data: { text: text, recieverRoleName: reciever },
+            success: function (result) {
+                if (result.isError) {
+                    myalert(result.Msg, 'danger');
+                    return;
+                } else {
+                    $('#Messaging_Text').val("");
+                    myalert(result.Msg, 'success');
+                    BoardPartial();
+                    $('a.l-btn').linkbutton({ disabled: false });
+                }
+            },
+            error: function (xhr, status) {
+                xhr.responseText();
+            }
+        });
+    }
+</script>

@@ -1,0 +1,13 @@
+﻿@model Annual_faculty_promotions.Core.Domain.College
+@using (Html.BeginForm("Create", "College", FormMethod.Post, new { id = "frmAddCollege", @class = "form-horizontal" }))
+{
+
+    <div class="form-group form-group-sm">
+        @Html.LabelFor(model => model.Name, new { @class = "col-sm-3 control-label" })
+        <div class="col-sm-9">
+            @Html.TextBoxFor(model => model.Name, new {@class = "form-control input-sm"})
+            @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+        </div>
+    </div>
+}
+
